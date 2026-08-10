@@ -1,0 +1,3882 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>كادن - طلب الطعام والبقالة</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #f9f9f9;
+      color: #333;
+      padding: 0 15px;
+      text-align: right;
+      direction: rtl;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-top: 20px;
+    }
+    h1, h2 {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .view-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding-bottom: 90px;
+    }
+    .hidden {
+      display: none !important;
+    }
+    #login-view, #city-selection-view {
+      padding-top: 50px;
+      text-align: center;
+    }
+    .login-form {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: 20px auto;
+    }
+    .input-group {
+      margin-bottom: 20px;
+      text-align: right;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #444;
+    }
+    .input-group input, .input-group button {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: right;
+    }
+    .input-group .phone-input {
+      display: flex;
+    }
+    .input-group .phone-prefix {
+      padding: 12px;
+      background-color: #eee;
+      border: 1px solid #ddd;
+      border-radius: 8px 0 0 8px;
+      font-weight: bold;
+    }
+    .input-group .phone-number {
+      flex-grow: 1;
+      border-radius: 0 8px 8px 0;
+      border-right: none;
+    }
+    .location-placeholder {
+      background-color: #e7f3ff;
+      border: 1px dashed #007bff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 15px;
+      color: #007bff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .location-placeholder.success {
+        background-color: #e7ffe7;
+        color: #28a745;
+        border-color: #28a745;
+    }
+    .location-placeholder.error {
+        background-color: #fde7e7;
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+    .error-message {
+      color: #dc3545;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .sections-container {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      padding-top: 30px;
+    }
+    .section-card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      text-align: right;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .section-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .section-image {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .section-info h2 {
+      font-size: 22px;
+      margin-bottom: 5px;
+    }
+    .section-info p {
+      color: #666;
+    }
+    .search-bar-container {
+      margin-bottom: 15px;
+      margin-top: 15px;
+      position: relative;
+    }
+    .search-bar-container input {
+      width: 100%;
+      padding: 12px 16px 12px 40px;
+      border: 2px solid #e0e0e0;
+      border-radius: 25px;
+      font-size: 15px;
+      text-align: right;
+      direction: rtl;
+      outline: none;
+      transition: border-color 0.3s;
+      background: white;
+    }
+    .search-bar-container input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+    }
+    .search-bar-container .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 16px;
+      pointer-events: none;
+    }
+    .no-results-msg {
+      text-align: center;
+      padding: 30px;
+      color: #999;
+      font-size: 15px;
+      display: none;
+    }
+    .categories {
+      display: flex;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: #ddd transparent;
+      padding-top: 20px;
+    }
+    .categories::-webkit-scrollbar { height: 6px; }
+    .categories::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 3px; }
+    .category {
+      flex: 0 0 auto;
+      background: #e7f3ff;
+      color: #007bff;
+      padding: 10px 18px;
+      margin-left: 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: 600;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .category:first-child { margin-left: 0; }
+    .category.active { background: #007bff; color: white; box-shadow: 0 2px 6px rgb(0 123 255 / 0.5); }
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+    }
+    .product-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: box-shadow 0.3s ease;
+      position: relative;
+    }
+    .product-card:hover { box-shadow: 0 6px 15px rgb(0 0 0 / 0.15); }
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .product-info { flex-grow: 1; }
+    .product-name {
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 16px;
+      color: #2c3e50;
+    }
+    .product-price {
+      color: #27ae60;
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .add-btn {
+      background-color: #007bff;
+      border: none;
+      color: white;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    .add-btn:hover { background-color: #0056b3; }
+    #cart-button {
+      position: fixed;
+      bottom: 80px;
+      left: 20px;
+      background-color: #ffc107;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 18px;
+      box-shadow: 0 3px 8px rgb(0 0 0 / 0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #cart-count {
+      background: #dc3545;
+      color: white;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+    }
+    #cart-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1500;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    #cart-modal.active { display: flex; }
+    #cart-content {
+      background: white;
+      border-radius: 15px;
+      max-width: 400px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      text-align: right;
+      direction: rtl;
+    }
+    #cart-content h2 { margin-bottom: 15px; color: #2c3e50; }
+    #cart-items {
+      margin-bottom: 20px;
+      font-size: 16px;
+      color: #333;
+      list-style: none;
+      padding-left: 0;
+    }
+    #cart-items li {
+        padding: 8px 0;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        text-align: right;
+    }
+    #cart-items li:hover { background-color: #f9f9f9; }
+    .cart-item-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 5px;
+        flex-shrink: 0;
+    }
+    .cart-item-details {
+        flex-grow: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .cart-item-name {
+        font-weight: 600;
+        color: #333;
+    }
+    .cart-item-price {
+        font-weight: 700;
+        color: #27ae60;
+        white-space: nowrap;
+    }
+    #cart-total, #delivery-fee, #grand-total {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #27ae60;
+      text-align: right;
+    }
+    #grand-total {
+        margin-top: 15px;
+        font-size: 20px;
+        color: #0056b3;
+    }
+    #cart-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .cart-btn {
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    #close-cart-btn { background-color: #ccc; color: #333; }
+    #close-cart-btn:hover { background-color: #aaa; }
+    #submit-order-btn { 
+        background-color: #007bff; 
+        color: white; 
+    }
+    #submit-order-btn:hover { 
+        background-color: #0056b3; 
+    }
+    .bottom-navbar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: white;
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+      z-index: 900;
+      justify-content: space-around;
+      align-items: center;
+      height: 70px;
+      padding: 5px 0;
+      direction: rtl;
+    }
+    .bottom-navbar.visible {
+        display: flex;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #666;
+      font-size: 14px;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .nav-item:hover {
+      color: #007bff;
+    }
+    .nav-item .icon {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      margin-bottom: 5px;
+    }
+    .support-button-container {
+        position: fixed;
+        top: 20px;
+        left: 15px; 
+        z-index: 1000;
+        text-align: left;
+        direction: ltr;
+    }
+    .support-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        transition: background-color 0.3s;
+    }
+    .support-btn:hover {
+        background-color: #0056b3;
+    }
+    .support-icon {
+        width: 20px;
+        height: 20px;
+        fill: white;
+    }
+    .support-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .support-modal.active {
+        display: flex;
+    }
+    .support-content {
+        background: white;
+        border-radius: 15px;
+        max-width: 450px;
+        width: 100%;
+        padding: 30px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.4);
+        text-align: right;
+        direction: rtl;
+    }
+    .support-content h2 {
+        margin-bottom: 20px;
+        color: #2c3e50;
+    }
+    .support-content textarea {
+        width: 100%;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        font-size: 16px;
+        min-height: 150px;
+        resize: vertical;
+        margin-bottom: 20px;
+        text-align: right;
+        direction: rtl;
+    }
+    .support-modal-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .support-modal-btn {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    #send-complaint-btn {
+        background-color: #007bff;
+        color: white;
+    }
+    #send-complaint-btn:hover {
+        background-color: #0056b3;
+    }
+    #close-support-btn {
+        background-color: #ccc;
+        color: #333;
+    }
+    #close-support-btn:hover {
+        background-color: #aaa;
+    }
+
+    /* ========== Toast Notification ========== */
+    .app-toast {
+        display: none;
+        position: fixed;
+        bottom: 100px;
+        right: 50%;
+        transform: translateX(50%);
+        padding: 14px 22px;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        z-index: 5000;
+        font-weight: 600;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.4s, bottom 0.4s;
+        min-width: 260px;
+        max-width: 340px;
+        font-size: 15px;
+    }
+    .app-toast.show {
+        display: block;
+        opacity: 1;
+    }
+    .app-toast.toast-success {
+        background-color: #007bff;
+        color: white;
+    }
+    .app-toast.toast-error {
+        background-color: #dc3545;
+        color: white;
+    }
+    .app-toast.toast-info {
+        background-color: #2c3e50;
+        color: white;
+    }
+
+    /* ========== Custom Alert Modal ========== */
+    .app-alert-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 6000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .app-alert-overlay.active { display: flex; }
+    .app-alert-box {
+        background: white;
+        border-radius: 16px;
+        padding: 28px 24px 20px;
+        max-width: 360px;
+        width: 100%;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        text-align: center;
+        direction: rtl;
+    }
+    .app-alert-icon {
+        font-size: 36px;
+        margin-bottom: 12px;
+    }
+    .app-alert-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+    .app-alert-message {
+        font-size: 15px;
+        color: #555;
+        margin-bottom: 22px;
+        line-height: 1.6;
+    }
+    .app-alert-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    .app-alert-btn {
+        flex: 1;
+        padding: 11px 18px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .app-alert-btn:hover { opacity: 0.85; }
+    .app-alert-btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    .app-alert-btn-secondary {
+        background-color: #eee;
+        color: #333;
+    }
+    .app-alert-btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    /* ========== Pickup Location Modal ========== */
+    .pickup-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 5500;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .pickup-modal-overlay.active { display: flex; }
+    .pickup-modal-box {
+        background: white;
+        border-radius: 18px;
+        padding: 28px 22px 22px;
+        max-width: 380px;
+        width: 100%;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.2);
+        text-align: right;
+        direction: rtl;
+    }
+    .pickup-modal-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .pickup-modal-header-icon {
+        width: 38px;
+        height: 38px;
+        background: #e7f3ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .pickup-modal-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    .pickup-modal-location {
+        background: #f0f7ff;
+        border: 1px solid #cce0ff;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+        font-size: 14px;
+        color: #333;
+        line-height: 1.5;
+    }
+    .pickup-modal-location span {
+        font-weight: 700;
+        color: #007bff;
+        display: block;
+        margin-top: 3px;
+        font-size: 15px;
+    }
+    .pickup-modal-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    .pickup-modal-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .pickup-modal-btn:hover { opacity: 0.85; }
+    .pickup-btn-confirm {
+        background-color: #007bff;
+        color: white;
+    }
+    .pickup-btn-change {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    /* ========== City Map Modal ========== */
+    .city-map-modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 4500;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+    }
+    .city-map-modal.active { display: flex; }
+    .city-map-container {
+        width: 100%;
+        max-width: 600px;
+        height: 80vh;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .city-map-header {
+        background: #007bff;
+        color: white;
+        padding: 15px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .city-map-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: white;
+    }
+    .city-map-close {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        font-size: 20px;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #city-leaflet-map {
+        flex: 1;
+        width: 100%;
+    }
+    .city-map-footer {
+        background: white;
+        padding: 14px;
+        display: flex;
+        gap: 10px;
+        border-top: 1px solid #eee;
+    }
+    .city-map-proceed-btn {
+        flex: 2;
+        padding: 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 15px;
+        cursor: pointer;
+    }
+    .city-map-proceed-btn:hover { background-color: #0056b3; }
+    .city-map-cancel-btn {
+        flex: 1;
+        padding: 12px;
+        background-color: #eee;
+        color: #333;
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .notification-pop-up {
+        display: none;
+        position: fixed;
+        bottom: 100px;
+        right: 50%;
+        transform: translateX(50%);
+        background-color: #007bff;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        z-index: 3000;
+        font-weight: bold;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.5s, bottom 0.5s;
+        min-width: 300px;
+    }
+    .notification-pop-up.show {
+        display: block;
+        opacity: 1;
+    }
+    .city-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 300px;
+        margin: 30px auto;
+    }
+    .city-btn {
+        padding: 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .city-btn:hover {
+        background-color: #0056b3;
+    }
+    .restaurant-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding-top: 30px;
+    }
+    .restaurant-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-align: right;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .restaurant-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .restaurant-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+    .restaurant-info h2 {
+        font-size: 22px;
+        margin-bottom: 5px;
+    }
+    .restaurant-info p {
+        color: #666;
+        font-size: 15px;
+    }
+    .saved-location-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #f0f8ff;
+        border: 1px solid #cfe2ff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-size: 15px;
+        color: #333;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    .saved-location-item:hover {
+        background-color: #e2f0ff;
+    }
+    .saved-location-item.selected {
+        border-color: #007bff;
+        background-color: #dbeaff;
+        font-weight: bold;
+    }
+    .location-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .location-btn {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #007bff;
+        background-color: white;
+        color: #007bff;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .location-btn:hover {
+        background-color: #007bff;
+        color: white;
+    }
+    .location-btn.active {
+        background-color: #007bff;
+        color: white;
+    }
+    .map-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.8);
+        z-index: 4000;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+    }
+    .map-modal.active {
+        display: flex;
+    }
+    .map-container {
+        width: 100%;
+        max-width: 600px;
+        height: 80vh;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+    #leaflet-map {
+        width: 100%;
+        height: 100%;
+        background: #f0f0f0;
+        z-index: 1;
+    }
+    .map-header {
+        background: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        z-index: 2;
+    }
+    .map-header h3 {
+        margin: 0;
+        color: #333;
+        font-size: 18px;
+    }
+    .map-close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+        padding: 5px 10px;
+    }
+    .map-close-btn:hover {
+        color: #333;
+    }
+    .map-footer {
+        background: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        border-top: 1px solid #eee;
+        z-index: 2;
+    }
+    .map-select-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        flex: 1;
+        font-size: 16px;
+    }
+    .map-select-btn:hover {
+        background-color: #0056b3;
+    }
+    .map-cancel-btn {
+        background-color: #ccc;
+        color: #333;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        flex: 1;
+        font-size: 16px;
+    }
+    .map-cancel-btn:hover {
+        background-color: #aaa;
+    }
+    .order-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border-right: 5px solid #ffc107;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .order-number {
+        font-weight: bold;
+        color: #007bff;
+        font-size: 16px;
+        background: #e7f3ff;
+        padding: 5px 12px;
+        border-radius: 20px;
+    }
+    .order-status {
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 0.3px;
+    }
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+    .status-accepted {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    .status-delivering {
+        background-color: #cce5ff;
+        color: #004085;
+        border: 1px solid #b8daff;
+    }
+    .status-delivered {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .order-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 20px;
+        margin-bottom: 20px;
+        background: #fafafa;
+        padding: 15px;
+        border-radius: 12px;
+    }
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .detail-label {
+        font-size: 12px;
+        color: #777;
+        margin-bottom: 4px;
+    }
+    .detail-value {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 15px;
+    }
+    .detail-value.highlight {
+        color: #27ae60;
+        font-size: 16px;
+    }
+    .order-items-summary {
+        margin-bottom: 20px;
+    }
+    .items-toggle {
+        background: none;
+        border: none;
+        color: #007bff;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 5px 0;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .items-toggle:hover {
+        text-decoration: underline;
+    }
+    .order-items-list {
+        list-style: none;
+        padding: 10px 0 0 0;
+        margin-top: 10px;
+        border-top: 1px dashed #ddd;
+        display: none;
+    }
+    .order-items-list.show {
+        display: block;
+    }
+    .order-items-list li {
+        padding: 8px 0;
+        display: flex;
+        justify-content: space-between;
+        color: #555;
+        font-size: 14px;
+        border-bottom: 1px dotted #eee;
+    }
+    .order-items-list li:last-child {
+        border-bottom: none;
+    }
+    .order-track-btn {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        font-size: 15px;
+        margin-top: 5px;
+    }
+    .order-track-btn:hover {
+        background-color: #0056b3;
+    }
+    .empty-orders {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .empty-orders img {
+        width: 100px;
+        opacity: 0.7;
+        margin-bottom: 20px;
+    }
+    .empty-orders h3 {
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+    .empty-orders p {
+        margin-bottom: 25px;
+        color: #777;
+    }
+    .offer-badge {
+        background-color: #dc3545;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+    }
+    .old-price {
+        text-decoration: line-through;
+        color: #999;
+        font-size: 12px;
+        margin-left: 5px;
+    }
+    .coords-hint {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    .selected-coords {
+        background: #f0f0f0;
+        padding: 8px;
+        border-radius: 6px;
+        margin: 10px 0;
+        text-align: center;
+        font-size: 14px;
+        direction: ltr;
+    }
+    /* إخفاء شارة Leaflet */
+    .leaflet-control-attribution {
+        display: none !important;
+    }
+
+    /* ===== Services & Taxi Subscription ===== */
+    .services-view-header {
+        text-align: center;
+        padding: 30px 15px 20px;
+    }
+    .services-view-header h1 { font-size: 24px; color: #2c3e50; margin-bottom: 8px; }
+    .services-view-header p { color: #777; font-size: 14px; }
+
+    .service-section-title {
+        font-size: 18px; font-weight: 700; color: #2c3e50;
+        margin: 20px 0 14px; display: flex; align-items: center; gap: 8px;
+    }
+
+    .taxi-packages-container {
+        display: flex; flex-direction: column; gap: 18px; margin-bottom: 30px;
+    }
+
+    .taxi-package-card {
+        background: white; border-radius: 18px;
+        box-shadow: 0 5px 18px rgba(0,0,0,0.09);
+        padding: 20px; display: flex; align-items: center; gap: 16px;
+        cursor: pointer; transition: transform 0.25s, box-shadow 0.25s;
+        border: 2px solid transparent; position: relative; overflow: hidden;
+    }
+    .taxi-package-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.14);
+    }
+    .taxi-package-card.selected {
+        border-color: #007bff;
+        background: #f0f6ff;
+    }
+    .taxi-package-icon {
+        width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;
+        border-radius: 12px;
+    }
+    .taxi-package-info { flex: 1; }
+    .taxi-package-name { font-size: 18px; font-weight: 700; color: #1a2b4c; margin-bottom: 5px; }
+    .taxi-package-km { font-size: 14px; color: #555; margin-bottom: 8px; }
+    .taxi-package-price {
+        font-size: 22px; font-weight: 800; color: #007bff;
+    }
+    .taxi-package-price span { font-size: 14px; font-weight: 500; color: #888; }
+    .taxi-select-btn {
+        position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+        width: 26px; height: 26px; border-radius: 50%;
+        border: 2px solid #ddd; display: flex; align-items: center; justify-content: center;
+        font-size: 13px; color: transparent; transition: all 0.2s;
+    }
+    .taxi-package-card.selected .taxi-select-btn {
+        border-color: #007bff; background: #007bff; color: white;
+    }
+
+    .taxi-subscribe-btn {
+        width: 100%; padding: 16px; background: #007bff; color: white;
+        border: none; border-radius: 14px; font-size: 17px; font-weight: 700;
+        cursor: pointer; margin-top: 5px; margin-bottom: 30px;
+        transition: background 0.3s, transform 0.2s; box-shadow: 0 4px 14px rgba(0,123,255,0.3);
+    }
+    .taxi-subscribe-btn:hover { background: #0056b3; transform: translateY(-2px); }
+    .taxi-subscribe-btn:disabled { background: #aaa; cursor: not-allowed; transform: none; }
+
+    .taxi-my-subs { background: white; border-radius: 14px; padding: 18px; box-shadow: 0 3px 12px rgba(0,0,0,0.07); margin-bottom: 30px; }
+    .taxi-my-subs h3 { font-size: 16px; color: #1a2b4c; margin-bottom: 14px; }
+    .sub-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px;
+    }
+    .sub-item:last-child { border-bottom: none; }
+    .sub-item-left .sub-name { font-weight: 700; color: #222; }
+    .sub-item-left .sub-date { font-size: 12px; color: #aaa; margin-top: 2px; }
+    .sub-status {
+        padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .sub-status-pending { background: #fff3cd; color: #856404; }
+    .sub-status-approved { background: #d4edda; color: #155724; }
+    .sub-status-rejected { background: #f8d7da; color: #721c24; }
+    .sub-empty { text-align: center; padding: 20px; color: #aaa; font-size: 14px; }
+
+    /* ===== Unified Sticky Header (delivery + search) ===== */
+    .smart-search-bar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 800;
+        background: rgba(255,255,255,0.96);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 8px 15px;
+        box-shadow: 0 2px 14px rgba(0,0,0,0.09);
+        transition: transform 0.38s cubic-bezier(0.4,0,0.2,1),
+                    opacity 0.38s ease,
+                    box-shadow 0.3s;
+        transform: translateY(0);
+    }
+    .smart-search-bar.scrolled-down {
+        transform: translateY(-100%);
+        opacity: 0;
+        box-shadow: none;
+    }
+    /* Inner wrapper — column layout for stacked rows */
+    .sticky-header-rows {
+        max-width: 600px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+    /* Delivery row — minimal, integrated with header */
+    .sticky-delivery-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #eef5ff;
+        border: none;
+        border-radius: 12px;
+        padding: 9px 14px;
+        cursor: pointer;
+        direction: rtl;
+        transition: background 0.22s;
+        user-select: none;
+    }
+    .sticky-delivery-row:hover,
+    .sticky-delivery-row:active {
+        background: #daeaff;
+    }
+    .sticky-delivery-icon {
+        font-size: 14px;
+        flex-shrink: 0;
+        line-height: 1;
+        color: #007bff;
+    }
+    .sticky-delivery-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 0;
+        overflow: hidden;
+    }
+    .sticky-delivery-label {
+        font-size: 12px;
+        color: #6fa8dc;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .sticky-delivery-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a4f8a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .sticky-delivery-chevron {
+        color: #6fa8dc;
+        font-size: 18px;
+        flex-shrink: 0;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+    .sticky-delivery-row:hover .sticky-delivery-chevron { color: #007bff; }
+
+    /* Search row */
+    .smart-search-inner {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .smart-search-input {
+        width: 100%;
+        padding: 11px 42px 11px 40px;
+        border: 2px solid #eaecf0;
+        border-radius: 30px;
+        font-size: 15px;
+        text-align: right;
+        direction: rtl;
+        outline: none;
+        background: #f4f6fa;
+        color: #333;
+        font-family: inherit;
+        transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+    }
+    .smart-search-input::placeholder { color: #aaa; }
+    .smart-search-input:focus {
+        border-color: #007bff;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
+    }
+    .smart-search-icon-fix {
+        position: absolute;
+        right: 15px;
+        color: #bbb;
+        font-size: 16px;
+        pointer-events: none;
+        line-height: 1;
+    }
+    .smart-search-clear {
+        position: absolute;
+        left: 13px;
+        background: #e0e0e0;
+        border: none;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        cursor: pointer;
+        color: #555;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        line-height: 1;
+    }
+    .smart-search-clear:hover { background: #c8c8c8; }
+    /* Body padding: one row (delivery only) ≈ 58px, two rows ≈ 110px */
+    body.search-bar-visible {
+        padding-top: 110px;
+    }
+    body.search-bar-visible.delivery-only {
+        padding-top: 58px;
+    }
+
+    /* ===== Ads / Promo Banner ===== */
+    .ads-banner {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        margin-top: 6px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+        touch-action: pan-y;
+        user-select: none;
+    }
+    .ads-track-wrapper { overflow: hidden; border-radius: 16px; }
+    .ads-track {
+        display: flex;
+        will-change: transform;
+        transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+    }
+    .ad-slide {
+        flex: 0 0 100%;
+        display: block;
+        text-decoration: none;
+        position: relative;
+    }
+    .ad-slide img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        display: block;
+    }
+    .ad-slide-label {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.55));
+        color: white;
+        padding: 14px 16px 10px;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: right;
+    }
+    .ads-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 0 6px;
+        background: white;
+    }
+    .ads-dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: #ddd;
+        cursor: pointer;
+        transition: background 0.3s, transform 0.3s, width 0.3s;
+    }
+    .ads-dot.active {
+        background: #007bff;
+        transform: scale(1.25);
+        width: 20px;
+        border-radius: 4px;
+    }
+    .ads-prev, .ads-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255,255,255,0.75);
+        border: none;
+        border-radius: 50%;
+        width: 30px; height: 30px;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        z-index: 2;
+        transition: background 0.2s;
+    }
+    .ads-prev:hover, .ads-next:hover { background: rgba(255,255,255,0.95); }
+    .ads-prev { right: 8px; }
+    .ads-next { left: 8px; }
+
+    /* ===== Account Support Card ===== */
+    .account-support-card {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border-radius: 14px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        cursor: pointer;
+        margin-top: 18px;
+        transition: opacity 0.2s, transform 0.2s;
+        box-shadow: 0 4px 16px rgba(0,123,255,0.3);
+        border: none;
+        width: 100%;
+        text-align: right;
+        direction: rtl;
+    }
+    .account-support-card:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    .account-support-icon {
+        width: 44px; height: 44px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    .account-support-info h3 {
+        color: white !important;
+        font-size: 16px;
+        margin-bottom: 2px;
+    }
+    .account-support-info p {
+        color: rgba(255,255,255,0.8);
+        font-size: 13px;
+        margin: 0;
+    }
+    /* hide old support button */
+    .support-button-container { display: none !important; }
+
+    /* ===== Delivery Location Bar ===== */
+    .delivery-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        border: 1.8px solid #eaecf0;
+        border-radius: 16px;
+        padding: 12px 16px;
+        cursor: pointer;
+        margin-bottom: 18px;
+        transition: border-color 0.25s, box-shadow 0.25s;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        direction: rtl;
+    }
+    .delivery-bar:hover {
+        border-color: #007bff;
+        box-shadow: 0 4px 16px rgba(0,123,255,0.12);
+    }
+    .delivery-bar-icon { font-size: 22px; flex-shrink: 0; }
+    .delivery-bar-content { flex: 1; }
+    .delivery-bar-label { font-size: 11px; color: #aaa; margin-bottom: 2px; }
+    .delivery-bar-name { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+    .delivery-bar-chevron {
+        color: #bbb;
+        font-size: 20px;
+        flex-shrink: 0;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+    .delivery-bar:hover .delivery-bar-chevron { color: #007bff; }
+
+    /* ===== Delivery Bottom Sheet ===== */
+    .delivery-sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.38);
+        z-index: 1100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.32s;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+    .delivery-sheet-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+    .delivery-sheet {
+        background: white;
+        border-radius: 22px 22px 0 0;
+        padding-bottom: 30px;
+        transform: translateY(100%);
+        transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
+        max-height: 72vh;
+        overflow-y: auto;
+    }
+    .delivery-sheet-overlay.active .delivery-sheet {
+        transform: translateY(0);
+    }
+    .delivery-sheet-handle {
+        width: 40px; height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        margin: 14px auto 0;
+    }
+    .delivery-sheet-title {
+        font-size: 17px;
+        font-weight: 700;
+        text-align: center;
+        padding: 14px 20px 12px;
+        border-bottom: 1px solid #f0f0f0;
+        color: #1a1a1a;
+    }
+    .delivery-locations-list {
+        padding: 12px 16px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+    .delivery-loc-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 2px solid #f0f0f0;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        direction: rtl;
+    }
+    .delivery-loc-item.selected {
+        border-color: #007bff;
+        background: #f0f6ff;
+    }
+    .delivery-loc-item:hover:not(.selected) {
+        border-color: #d0d8e8;
+        background: #fafbfd;
+    }
+    .delivery-loc-emoji { font-size: 22px; flex-shrink: 0; }
+    .delivery-loc-info { flex: 1; }
+    .delivery-loc-name { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+    .delivery-loc-addr { font-size: 12px; color: #aaa; margin-top: 2px; }
+    .delivery-loc-check {
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px;
+        color: transparent;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    .delivery-loc-item.selected .delivery-loc-check {
+        border-color: #007bff;
+        background: #007bff;
+        color: white;
+    }
+    .delivery-sheet-empty {
+        text-align: center;
+        padding: 28px 20px 8px;
+        color: #aaa;
+        font-size: 14px;
+    }
+    .delivery-sheet-add-btn {
+        margin: 8px 16px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px;
+        border: 2px dashed #c8d8ff;
+        border-radius: 14px;
+        background: transparent;
+        color: #007bff;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        width: calc(100% - 32px);
+        font-family: inherit;
+        transition: background 0.2s, border-color 0.2s;
+    }
+    .delivery-sheet-add-btn:hover {
+        background: #f0f6ff;
+        border-color: #007bff;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== Custom Alert Modal ===== -->
+<div id="app-alert-overlay" class="app-alert-overlay">
+    <div class="app-alert-box">
+        <div class="app-alert-icon" id="app-alert-icon">ℹ️</div>
+        <div class="app-alert-title" id="app-alert-title"></div>
+        <div class="app-alert-message" id="app-alert-message"></div>
+        <div class="app-alert-buttons" id="app-alert-buttons"></div>
+    </div>
+</div>
+
+<!-- ===== Pickup Location Modal ===== -->
+<div id="pickup-modal-overlay" class="pickup-modal-overlay">
+    <div class="pickup-modal-box">
+        <div class="pickup-modal-header">
+            <div class="pickup-modal-header-icon">📍</div>
+            <div class="pickup-modal-title">موقع الاستلام</div>
+        </div>
+        <div class="pickup-modal-location">
+            موقعك الحالي للاستلام:
+            <span id="pickup-current-location-text"></span>
+        </div>
+        <div class="pickup-modal-buttons">
+            <button class="pickup-modal-btn pickup-btn-confirm" onclick="confirmSameLocation()">نفس الموقع</button>
+            <button class="pickup-modal-btn pickup-btn-change" onclick="changePickupLocation()">تغيير</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== City Map Modal ===== -->
+<div id="city-map-modal" class="city-map-modal">
+    <div class="city-map-container">
+        <div class="city-map-header">
+            <h3 id="city-map-title">خريطة المدينة</h3>
+            <button class="city-map-close" onclick="closeCityMap()">×</button>
+        </div>
+        <div id="city-leaflet-map"></div>
+        <div class="city-map-footer">
+            <button class="city-map-cancel-btn" onclick="closeCityMap()">إلغاء</button>
+            <button class="city-map-proceed-btn" onclick="proceedAfterCityMap()">ابدأ الطلب من هذه المدينة</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Unified Sticky Header (delivery + search) ===== -->
+<div id="smart-search-bar" class="smart-search-bar hidden">
+    <div class="sticky-header-rows">
+        <!-- Delivery location row -->
+        <div id="sticky-delivery-bar" class="sticky-delivery-row hidden" onclick="openDeliverySheet()">
+            <span id="delivery-bar-icon" class="sticky-delivery-icon">📍</span>
+            <div class="sticky-delivery-content">
+                <span class="sticky-delivery-label">التوصيل إلى</span>
+                <span id="delivery-bar-name" class="sticky-delivery-name">جاري التحديد...</span>
+            </div>
+            <span class="sticky-delivery-chevron">‹</span>
+        </div>
+        <!-- Search row -->
+        <div id="smart-search-row" class="smart-search-inner hidden">
+            <span class="smart-search-icon-fix">🔍</span>
+            <input type="text" id="global-search-input" class="smart-search-input"
+                   placeholder="ابحث..." oninput="handleGlobalSearch()" autocomplete="off">
+            <button class="smart-search-clear hidden" id="search-clear-btn" onclick="clearGlobalSearch()">×</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Delivery Location Bottom Sheet ===== -->
+<div class="delivery-sheet-overlay" id="delivery-sheet-overlay" onclick="handleDeliverySheetBackdrop(event)">
+    <div class="delivery-sheet" id="delivery-sheet">
+        <div class="delivery-sheet-handle"></div>
+        <div class="delivery-sheet-title">اختر عنوان التوصيل</div>
+        <div class="delivery-locations-list" id="delivery-locations-list"></div>
+        <button class="delivery-sheet-add-btn" onclick="addDeliveryFromSheet()">
+            <span>+</span> إضافة عنوان جديد
+        </button>
+    </div>
+</div>
+
+<div id="app-toast" class="app-toast"></div>
+
+<div class="support-button-container">
+    <button class="support-btn" onclick="openSupportModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="support-icon">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V3a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>دعم العملاء</span>
+    </button>
+</div>
+
+<div id="support-modal" class="support-modal">
+    <div class="support-content">
+        <form id="support-form">
+            <h2>إرسال شكوى/استفسار</h2>
+            
+            <div id="support-phone-group" class="input-group support-phone-input hidden">
+                <label for="support-phone">رقم الهاتف:</label>
+                <div class="phone-input">
+                    <span class="phone-prefix">+218</span>
+                    <input type="tel" id="support-phone" class="phone-number" placeholder="مثال: 9X XXX XXXX">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="complaint-message">الرسالة:</label>
+                <textarea id="complaint-message" required placeholder="اكتب رسالتك هنا..."></textarea>
+            </div>
+
+            <div class="support-modal-footer">
+                <button type="button" class="support-modal-btn" id="close-support-btn" onclick="closeSupportModal()">إلغاء</button>
+                <button type="submit" class="support-modal-btn" id="send-complaint-btn">إرسال الشكوى</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="map-modal" class="map-modal">
+    <div class="map-container">
+        <div class="map-header">
+            <h3>اختر موقعك على الخريطة</h3>
+            <button class="map-close-btn" onclick="closeMapModal()">×</button>
+        </div>
+        <div id="leaflet-map"></div>
+        <div class="map-footer">
+            <div style="flex:2; text-align:center;" id="map-coords-display"></div>
+            <button class="map-cancel-btn" onclick="closeMapModal()">إلغاء</button>
+            <button class="map-select-btn" onclick="selectMapLocation()">تأكيد الموقع</button>
+        </div>
+    </div>
+</div>
+
+<div class="view-container">
+
+    <div id="city-selection-view" class="hidden">
+        <header>
+            <h1>اختر مدينتك</h1>
+            <p>يرجى اختيار المدينة التي تود الطلب منها.</p>
+        </header>
+        <div class="city-buttons">
+            <button class="city-btn" onclick="selectCity('بنغازي')">بنغازي</button>
+            <button class="city-btn" onclick="selectCity('طرابلس')">طرابلس</button>
+            <button class="city-btn" onclick="selectCity('سبها')">سبها</button>
+        </div>
+    </div>
+
+    <div id="login-view" class="hidden">
+        <header>
+            <h1>مرحبا بك في كادن</h1>
+            <p>يرجى تسجيل الدخول لتحديد موقعك وبدء الطلب.</p>
+        </header>
+        <div class="login-form">
+            <h2>تسجيل الدخول</h2>
+            <div class="input-group">
+                <label for="phone-number">رقم الهاتف الليبي:</label>
+                <div class="phone-input">
+                    <span class="phone-prefix">+218</span>
+                    <input type="tel" id="phone-number" class="phone-number" placeholder="مثال: 9X XXX XXXX" required>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>تحديد الموقع:</label>
+                <div class="location-buttons">
+                    <button type="button" class="location-btn" onclick="openMapModal('login')">🗺️ تحديد على الخريطة</button>
+                </div>
+                <div class="location-placeholder" id="location-status" onclick="openMapModal('login')">
+                    📍 اختر موقعك على الخريطة
+                </div>
+                <input type="text" id="user-location" placeholder="أو أدخل اسم منطقتك أو عنوانك يدوياً" oninput="handleManualLocationInput()">
+                <input type="hidden" id="user-lat">
+                <input type="hidden" id="user-lng">
+                <div class="coords-hint" id="login-coords-hint"></div>
+            </div>
+            <button class="btn-primary" onclick="handleLogin()">دخول</button>
+            <div id="login-error" class="error-message hidden"></div>
+        </div>
+    </div>
+    
+    <div id="selection-view" class="hidden">
+
+        <!-- ===== Ads Banner ===== -->
+        <div class="ads-banner" id="ads-banner">
+            <div class="ads-track-wrapper">
+                <div class="ads-track" id="ads-track">
+                    <a href="#" class="ad-slide" onclick="return false;" data-link="">
+                        <img src="https://up6.cc/2026/02/177125070989171.jpeg" alt="إعلان 1">
+                        <div class="ad-slide-label">عروض حصرية على المنتجات اليومية</div>
+                    </a>
+                    <a href="#" class="ad-slide" onclick="return false;" data-link="">
+                        <img src="https://www2.0zz0.com/2025/07/11/14/146112310.jpg" alt="إعلان 2">
+                        <div class="ad-slide-label">أشهى المطاعم في مدينتك</div>
+                    </a>
+                    <a href="#" class="ad-slide" onclick="return false;" data-link="">
+                        <img src="https://www2.0zz0.com/2025/07/11/14/596941206.jpg" alt="إعلان 3">
+                        <div class="ad-slide-label">تسوق البقالة من راحة بيتك</div>
+                    </a>
+                </div>
+            </div>
+            <button class="ads-prev" onclick="adsSlide(-1)">‹</button>
+            <button class="ads-next" onclick="adsSlide(1)">›</button>
+            <div class="ads-dots" id="ads-dots"></div>
+        </div>
+<header>
+            <h1>اختر القسم الذي تريد تصفحه</h1>
+        </header>
+        <div class="sections-container">
+            <div class="section-card" onclick="showView('supermarket-view')">
+                <img src="https://www2.0zz0.com/2025/07/11/14/596941206.jpg" alt="Supermarket" class="section-image">
+                <div class="section-info">
+                    <h2>كادن ماركت</h2>
+                    <p>تسوق البقالة والمنتجات اليومية.</p>
+                </div>
+            </div>
+            <div class="section-card" onclick="showView('restaurant-list-view')">
+                <img src="https://www2.0zz0.com/2025/07/11/14/146112310.jpg" alt="Restaurant" class="section-image">
+                <div class="section-info">
+                    <h2>قسم المطاعم</h2>
+                    <p>اطلب وجباتك المفضلة والمأكولات اللذيذة.</p>
+                </div>
+            </div>
+            <div class="section-card" onclick="showView('offers-view')">
+                <img src="https://up6.cc/2026/02/177125070989171.jpeg" alt="Offers" class="section-image">
+                <div class="section-info">
+                    <h2>قسم العروض</h2>
+                    <p>اكتشف أحدث العروض والتخفيضات.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="supermarket-view" class="hidden">
+        <header>
+            <h1>كادن ماركت</h1>
+        </header>
+        <input type="hidden" id="supermarket-search">
+        <div class="categories supermarket-categories" id="supermarket-categories">
+            <div class="category active" data-category="all">كل الأقسام</div>
+            <div class="category" data-category="لحوم ودواجن">لحوم ودواجن</div>
+            <div class="category" data-category="ألبان وبيض">ألبان وبيض</div>
+            <div class="category" data-category="مواد غذائية">مواد غذائية</div>
+            <div class="category" data-category="مواد تنظيف">مواد تنظيف</div>
+            <div class="category" data-category="خضروات وفواكه">خضروات وفواكه</div>
+        </div>
+        <div class="products supermarket-products" id="supermarket-products"></div>
+        <div class="no-results-msg" id="supermarket-no-results">لا توجد نتائج مطابقة للبحث</div>
+    </div>
+    
+    <div id="restaurant-list-view" class="hidden">
+        <header>
+            <h1>قائمة المطاعم</h1>
+            <p>اختر مطعمك المفضل لتصفح قائمته.</p>
+        </header>
+        <input type="hidden" id="restaurant-search">
+        <div class="restaurant-list" id="restaurant-list-container"></div>
+        <div class="no-results-msg" id="restaurant-no-results">لا توجد مطاعم مطابقة للبحث</div>
+    </div>
+
+    <div id="single-restaurant-menu-view" class="hidden">
+        <header>
+            <h1 id="restaurant-menu-title"></h1>
+            <p id="restaurant-menu-description"></p>
+        </header>
+        <input type="hidden" id="menu-search">
+        <div class="categories restaurant-categories" id="restaurant-menu-categories"></div>
+        <div class="products restaurant-products" id="restaurant-menu-products"></div>
+        <div class="no-results-msg" id="menu-no-results">لا توجد نتائج مطابقة للبحث</div>
+    </div>
+
+    <div id="offers-view" class="hidden">
+        <header>
+            <h1>قسم العروض</h1>
+            <p>عروض وتخفيضات حصرية</p>
+        </header>
+        <input type="hidden" id="offers-search">
+        <div class="categories offers-categories" id="offers-categories">
+            <div class="category active" data-category="all">كل العروض</div>
+            <div class="category" data-category="سوبر ماركت">عروض السوبر ماركت</div>
+            <div class="category" data-category="مطاعم">عروض المطاعم</div>
+        </div>
+        <div class="products offers-products" id="offers-products"></div>
+        <div class="no-results-msg" id="offers-no-results">لا توجد نتائج مطابقة للبحث</div>
+    </div>
+
+    <div id="my-orders-view" class="hidden">
+        <header>
+            <h1>طلباتي</h1>
+            <p>تتبع حالة طلباتك</p>
+        </header>
+        <div id="orders-list" style="padding-top: 20px;"></div>
+    </div>
+
+    <div id="account-view" class="hidden">
+        <header>
+            <h1>بيانات حسابك</h1>
+            <p>يمكنك عرض وتعديل رقم هاتفك وموقعك هنا.</p>
+        </header>
+        <div class="login-form">
+            <h2>معلومات الحساب</h2>
+            <div class="input-group">
+                <label for="account-phone">رقم الهاتف:</label>
+                <div class="phone-input">
+                    <span class="phone-prefix">+218</span>
+                    <input type="tel" id="account-phone" class="phone-number" readonly>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="account-location">الموقع:</label>
+                <div class="location-buttons" id="account-location-buttons" style="display: none;">
+                    <button type="button" class="location-btn" onclick="openMapModal('account')">🗺️ تحديث على الخريطة</button>
+                </div>
+                <div class="location-placeholder hidden" id="account-location-status" onclick="openMapModal('account')">
+                    📍 اضغط هنا لتحديد موقعك على الخريطة
+                </div>
+                <input type="text" id="account-location" readonly>
+                <input type="hidden" id="account-lat">
+                <input type="hidden" id="account-lng">
+                <div class="coords-hint" id="account-coords-hint"></div>
+            </div>
+            <div class="input-group">
+                <label for="account-city">المدينة:</label>
+                <input type="text" id="account-city" readonly>
+                <button class="btn-primary" id="edit-city-btn" onclick="editCityFromAccount()">تغيير المدينة</button>
+            </div>
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+            <div class="input-group">
+                <label>اختر مكان الاستلام:</label>
+                <div id="saved-locations-list" style="margin-bottom: 15px;">
+                    <p id="no-saved-locations" style="color: #666; font-size: 14px; text-align: center;">لا توجد أماكن محفوظة بعد.</p>
+                </div>
+                <button class="btn-primary" onclick="showAddLocationModal()">إضافة موقع جديد</button>
+            </div>
+            <button class="btn-primary" id="edit-account-btn" onclick="toggleEditAccount(true)">تعديل البيانات</button>
+            <button class="btn-primary hidden" id="save-account-btn" onclick="saveAccountInfo()">حفظ التعديلات</button>
+            <div id="account-status" class="error-message hidden"></div>
+
+            <button class="account-support-card" onclick="openSupportModal()">
+                <div class="account-support-icon">💬</div>
+                <div class="account-support-info">
+                    <h3>دعم العملاء</h3>
+                    <p>شكوى أو استفسار؟ نحن هنا لمساعدتك</p>
+                </div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<button id="cart-button" class="hidden" onclick="openCart()">
+  🛒 السلة <span id="cart-count">0</span>
+</button>
+
+<div id="cart-modal">
+  <div id="cart-content">
+    <h2>السلة</h2>
+    <ul id="cart-items"></ul>
+    <div id="cart-total"></div>
+    <div id="delivery-fee"></div>
+    <div id="grand-total"></div>
+    <div id="cart-buttons">
+      <button class="cart-btn" id="close-cart-btn" onclick="closeCart()">إغلاق</button>
+      <button class="cart-btn" id="submit-order-btn" onclick="submitOrder()">إكمال الطلب</button>
+    </div>
+  </div>
+</div>
+
+<div id="add-location-modal" class="support-modal">
+    <div class="support-content">
+        <h2>إضافة موقع استلام جديد</h2>
+        <div class="input-group">
+            <label for="location-name">اسم الموقع (مثال: البيت، العمل):</label>
+            <input type="text" id="location-name" placeholder="ادخل اسم الموقع" required>
+        </div>
+        <div class="input-group">
+            <label for="new-saved-location-address">عنوان الموقع:</label>
+            <div class="location-buttons">
+                <button type="button" class="location-btn" onclick="openMapModal('new-location')">🗺️ تحديد على الخريطة</button>
+            </div>
+            <div class="location-placeholder" id="new-saved-location-status" onclick="openMapModal('new-location')">
+                📍 اختر موقعك على الخريطة
+            </div>
+            <input type="text" id="new-saved-location-address" placeholder="أو أدخل العنوان يدوياً" required oninput="handleManualNewLocationInput()">
+            <input type="hidden" id="new-saved-location-lat">
+            <input type="hidden" id="new-saved-location-lng">
+            <div class="coords-hint" id="new-location-coords-hint"></div>
+        </div>
+        <div class="support-modal-footer">
+            <button type="button" class="support-modal-btn" onclick="closeAddLocationModal()">إلغاء</button>
+            <button type="button" class="support-modal-btn" id="save-new-location-btn" onclick="saveNewDeliveryLocation()">حفظ الموقع</button>
+        </div>
+    </div>
+</div>
+
+<div id="bottom-navbar" class="bottom-navbar">
+  <div class="nav-item" onclick="showView('selection-view')">
+    <img src="https://www2.0zz0.com/2025/07/11/13/446983323.png" alt="الرئيسية" class="icon">
+    <span>الرئيسية</span>
+  </div>
+  <div class="nav-item" onclick="showView('services-view')">
+    <img src="https://up6.cc/2026/05/177954423891771.png" alt="خدمات" class="icon">
+    <span>خدمات</span>
+  </div>
+  <div class="nav-item" onclick="showView('my-orders-view')">
+    <img src="https://up6.cc/2026/02/177126257413781.png" alt="طلباتي" class="icon">
+    <span>طلباتي</span>
+  </div>
+  <div class="nav-item" onclick="showAccountView()">
+    <img src="https://www2.0zz0.com/2025/07/11/13/103393482.png" alt="حسابي" class="icon">
+    <span>حسابي</span>
+  </div>
+</div>
+
+<!-- Services View (Hub) -->
+<div id="services-view" class="view hidden" style="padding: 0 16px; padding-bottom: 90px;">
+
+  <!-- Services Hub -->
+  <div id="services-hub">
+    <div class="services-view-header">
+      <h1>🛎️ خدماتنا</h1>
+      <p>اختر الخدمة التي تريد</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; padding-top: 10px;">
+      <div onclick="openServiceSubView('taxi')" style="background: white; border-radius: 18px; box-shadow: 0 5px 18px rgba(0,0,0,0.09); padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s; border: 2px solid transparent;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 10px 25px rgba(0,0,0,0.14)'" onmouseout="this.style.transform='';this.style.boxShadow='0 5px 18px rgba(0,0,0,0.09)'">
+        <img src="https://www2.0zz0.com/2025/07/12/05/541825192.png" alt="تاكسي" style="width:70px; height:70px; object-fit:contain; border-radius:12px;">
+        <div style="font-size:17px; font-weight:700; color:#1a2b4c; text-align:center;">تاكسي كادن</div>
+        <div style="font-size:13px; color:#888; text-align:center;">اشتراكات التنقل الذكي</div>
+      </div>
+      <div style="background: #f7f8fa; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity:0.55; border: 2px dashed #ddd;">
+        <div style="font-size:48px;">🚚</div>
+        <div style="font-size:17px; font-weight:700; color:#aaa; text-align:center;">توصيل سريع</div>
+        <div style="font-size:12px; color:#bbb; text-align:center;">قريباً</div>
+      </div>
+      <div style="background: #f7f8fa; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity:0.55; border: 2px dashed #ddd;">
+        <div style="font-size:48px;">🧹</div>
+        <div style="font-size:17px; font-weight:700; color:#aaa; text-align:center;">خدمات المنزل</div>
+        <div style="font-size:12px; color:#bbb; text-align:center;">قريباً</div>
+      </div>
+      <div style="background: #f7f8fa; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity:0.55; border: 2px dashed #ddd;">
+        <div style="font-size:48px;">💊</div>
+        <div style="font-size:17px; font-weight:700; color:#aaa; text-align:center;">صيدلية</div>
+        <div style="font-size:12px; color:#bbb; text-align:center;">قريباً</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Taxi Sub-View -->
+  <div id="services-taxi-subview" style="display:none;">
+    <div style="display:flex; align-items:center; gap:10px; padding: 20px 0 10px;">
+      <button onclick="closeServiceSubView()" style="background:#eef3ff; border:none; border-radius:50%; width:36px; height:36px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">‹</button>
+      <div>
+        <div style="font-size:18px; font-weight:700; color:#1a2b4c;">🚕 تاكسي كادن</div>
+        <div style="font-size:13px; color:#888;">اشترك في الباقة المناسبة لك</div>
+      </div>
+    </div>
+
+    <div class="service-section-title">باقات الاشتراك الشهري</div>
+
+    <div class="taxi-packages-container">
+      <div class="taxi-package-card" id="pkg-fast" onclick="selectTaxiPackage('fast')">
+        <img src="https://www2.0zz0.com/2025/07/12/05/541825192.png" alt="كادن فاست" class="taxi-package-icon">
+        <div class="taxi-package-info">
+          <div class="taxi-package-name">كادن فاست</div>
+          <div class="taxi-package-km">📍 حتى 60 كيلومتر</div>
+          <div class="taxi-package-price">50 <span>دينار / شهر</span></div>
+        </div>
+        <div class="taxi-select-btn">✓</div>
+      </div>
+
+      <div class="taxi-package-card" id="pkg-classic" onclick="selectTaxiPackage('classic')">
+        <img src="https://www2.0zz0.com/2025/07/12/05/146751369.png" alt="كادن كلاسيك" class="taxi-package-icon">
+        <div class="taxi-package-info">
+          <div class="taxi-package-name">كادن كلاسيك</div>
+          <div class="taxi-package-km">📍 حتى 100 كيلومتر</div>
+          <div class="taxi-package-price">80 <span>دينار / شهر</span></div>
+        </div>
+        <div class="taxi-select-btn">✓</div>
+      </div>
+
+      <div class="taxi-package-card" id="pkg-express" onclick="selectTaxiPackage('express')">
+        <img src="https://www2.0zz0.com/2025/07/12/05/612921223.png" alt="كادن اكسبريس" class="taxi-package-icon">
+        <div class="taxi-package-info">
+          <div class="taxi-package-name">كادن اكسبريس</div>
+          <div class="taxi-package-km">📍 حتى 150 كيلومتر</div>
+          <div class="taxi-package-price">120 <span>دينار / شهر</span></div>
+        </div>
+        <div class="taxi-select-btn">✓</div>
+      </div>
+    </div>
+
+    <button class="taxi-subscribe-btn" id="taxi-subscribe-btn" onclick="submitTaxiSubscription()" disabled>
+      اشترك الآن
+    </button>
+
+    <div class="taxi-my-subs">
+      <h3>🗂️ اشتراكاتي السابقة</h3>
+      <div id="my-taxi-subs-list"><div class="sub-empty">لا توجد اشتراكات بعد</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAqK9mQsa4o4BIRzTiSl4npwB0liupganA",
+        authDomain: "caden-libya.firebaseapp.com",
+        databaseURL: "https://caden-libya-default-rtdb.firebaseio.com",
+        projectId: "caden-libya",
+        storageBucket: "caden-libya.firebasestorage.app",
+        messagingSenderId: "111568715581",
+        appId: "1:111568715581:web:467d04a4f7d8880dee8f54"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Global variables
+    let currentUserPhone = '';
+    let currentUserLocation = '';
+    let currentUserLat = null;
+    let currentUserLng = null;
+    let selectedCity = '';
+    let pendingCity = '';
+    let currentView = 'city-selection-view';
+    let isPopState = false;
+    let supermarketCart = [];
+    let restaurantCarts = {};
+    let currentShopType = 'supermarket';
+    const DELIVERY_FEE = 10;
+    let currentRestaurantId = null;
+    let savedDeliveryLocations = [];
+    let currentMapSource = '';
+    let mapSelectedLat = null;
+    let mapSelectedLng = null;
+    let mapInstance = null;
+    let mapMarker = null;
+    let cityMapInstance = null;
+    let activeCategory = 'all';
+    let activeOffersCategory = 'all';
+
+    // City coordinates for OpenStreetMap
+    const cityCoords = {
+        'بنغازي': { lat: 32.1167, lng: 20.0667, zoom: 13 },
+        'طرابلس': { lat: 32.9081, lng: 13.1808, zoom: 13 },
+        'سبها':   { lat: 27.0377, lng: 14.4283, zoom: 13 }
+    };
+
+    // DOM Elements
+    const views = {
+        'city-selection-view': document.getElementById('city-selection-view'),
+        'login-view': document.getElementById('login-view'),
+        'selection-view': document.getElementById('selection-view'),
+        'supermarket-view': document.getElementById('supermarket-view'),
+        'restaurant-list-view': document.getElementById('restaurant-list-view'),
+        'single-restaurant-menu-view': document.getElementById('single-restaurant-menu-view'),
+        'offers-view': document.getElementById('offers-view'),
+        'my-orders-view': document.getElementById('my-orders-view'),
+        'account-view': document.getElementById('account-view'),
+        'services-view': document.getElementById('services-view')
+    };
+    
+    // Taxi subscription state
+    let selectedTaxiPackage = null;
+    const taxiPackages = {
+        fast:    { name: 'كادن فاست',    km: 60,  price: 50 },
+        classic: { name: 'كادن كلاسيك', km: 100, price: 80 },
+        express: { name: 'كادن اكسبريس', km: 150, price: 120 }
+    };
+    const cartButton = document.getElementById('cart-button');
+    const cartCount = document.getElementById('cart-count');
+    const cartModal = document.getElementById('cart-modal');
+    const cartItemsList = document.getElementById('cart-items');
+    const cartTotalElement = document.getElementById('cart-total');
+    const deliveryFeeElement = document.getElementById('delivery-fee');
+    const grandTotalElement = document.getElementById('grand-total');
+    const bottomNavbar = document.getElementById('bottom-navbar');
+    const locationStatusElement = document.getElementById('location-status');
+    const userLocationInput = document.getElementById('user-location');
+    const userLatInput = document.getElementById('user-lat');
+    const userLngInput = document.getElementById('user-lng');
+    const accountPhoneInput = document.getElementById('account-phone');
+    const accountLocationInput = document.getElementById('account-location');
+    const accountCityInput = document.getElementById('account-city');
+    const editAccountBtn = document.getElementById('edit-account-btn');
+    const saveAccountBtn = document.getElementById('save-account-btn');
+    const accountStatus = document.getElementById('account-status');
+    const accountLocationStatusElement = document.getElementById('account-location-status');
+    const accountLatInput = document.getElementById('account-lat');
+    const accountLngInput = document.getElementById('account-lng');
+    const accountLocationButtons = document.getElementById('account-location-buttons');
+    const supportModal = document.getElementById('support-modal');
+    const supportForm = document.getElementById('support-form');
+    const supportPhoneGroup = document.getElementById('support-phone-group');
+    const supportPhoneInput = document.getElementById('support-phone');
+    const complaintMessageInput = document.getElementById('complaint-message');
+    const mapModal = document.getElementById('map-modal');
+    const mapCoordsDisplay = document.getElementById('map-coords-display');
+    const restaurantListContainer = document.getElementById('restaurant-list-container');
+    const restaurantMenuTitle = document.getElementById('restaurant-menu-title');
+    const restaurantMenuDescription = document.getElementById('restaurant-menu-description');
+    const restaurantMenuCategories = document.getElementById('restaurant-menu-categories');
+    const restaurantMenuProducts = document.getElementById('restaurant-menu-products');
+    const offersProducts = document.getElementById('offers-products');
+    const ordersList = document.getElementById('orders-list');
+    const addLocationModal = document.getElementById('add-location-modal');
+    const locationNameInput = document.getElementById('location-name');
+    const newSavedLocationStatus = document.getElementById('new-saved-location-status');
+    const newSavedLocationAddressInput = document.getElementById('new-saved-location-address');
+    const newSavedLocationLatInput = document.getElementById('new-saved-location-lat');
+    const newSavedLocationLngInput = document.getElementById('new-saved-location-lng');
+    const savedLocationsList = document.getElementById('saved-locations-list');
+    const noSavedLocationsMessage = document.getElementById('no-saved-locations');
+
+    // =========================================================
+    //  Custom Alert / Confirm / Toast System
+    // =========================================================
+    let alertResolve = null;
+
+    function showAppAlert({ icon = 'ℹ️', title = '', message, buttons = [] }) {
+        return new Promise((resolve) => {
+            alertResolve = resolve;
+            document.getElementById('app-alert-icon').textContent = icon;
+            document.getElementById('app-alert-title').textContent = title;
+            document.getElementById('app-alert-message').textContent = message;
+            const btnsContainer = document.getElementById('app-alert-buttons');
+            btnsContainer.innerHTML = '';
+            buttons.forEach(btn => {
+                const el = document.createElement('button');
+                el.className = `app-alert-btn ${btn.class || 'app-alert-btn-primary'}`;
+                el.textContent = btn.label;
+                el.onclick = () => {
+                    document.getElementById('app-alert-overlay').classList.remove('active');
+                    resolve(btn.value);
+                };
+                btnsContainer.appendChild(el);
+            });
+            document.getElementById('app-alert-overlay').classList.add('active');
+        });
+    }
+
+    function appAlert(message, icon = 'ℹ️', title = '') {
+        return showAppAlert({
+            icon,
+            title,
+            message,
+            buttons: [{ label: 'حسناً', value: true, class: 'app-alert-btn-primary' }]
+        });
+    }
+
+    function appConfirm(message, icon = '❓', title = '') {
+        return showAppAlert({
+            icon,
+            title,
+            message,
+            buttons: [
+                { label: 'إلغاء', value: false, class: 'app-alert-btn-secondary' },
+                { label: 'تأكيد', value: true, class: 'app-alert-btn-danger' }
+            ]
+        });
+    }
+
+    let toastTimer = null;
+    function showToast(message, type = 'success', duration = 3500) {
+        const toast = document.getElementById('app-toast');
+        toast.textContent = message;
+        toast.className = `app-toast toast-${type} show`;
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => { toast.className = 'app-toast'; }, 400);
+        }, duration);
+    }
+
+    // =========================================================
+    //  Pickup Location Modal
+    // =========================================================
+    function showPickupModal() {
+        const overlay = document.getElementById('pickup-modal-overlay');
+        // عرض اسم الموقع المحفوظ إن وُجد، وإلا عرض العنوان
+        const saved = localStorage.getItem('savedDeliveryLocations');
+        const locs = saved ? JSON.parse(saved) : [];
+        const matched = locs.find(l => l.address === currentUserLocation);
+        const displayName = matched ? matched.name : (currentUserLocation || 'غير محدد');
+        document.getElementById('pickup-current-location-text').textContent = displayName;
+        overlay.classList.add('active');
+    }
+
+    function confirmSameLocation() {
+        document.getElementById('pickup-modal-overlay').classList.remove('active');
+        showView('selection-view');
+        renderDeliveryBar();
+    }
+
+    function changePickupLocation() {
+        document.getElementById('pickup-modal-overlay').classList.remove('active');
+        showAccountView();
+    }
+
+    // =========================================================
+    //  City Map on OpenStreetMap
+    // =========================================================
+    function openCityMap(city) {
+        const coords = cityCoords[city];
+        if (!coords) return;
+        document.getElementById('city-map-title').textContent = `خريطة ${city}`;
+        document.getElementById('city-map-modal').classList.add('active');
+
+        setTimeout(() => {
+            if (cityMapInstance) {
+                cityMapInstance.remove();
+                cityMapInstance = null;
+            }
+            cityMapInstance = L.map('city-leaflet-map', { attributionControl: false })
+                .setView([coords.lat, coords.lng], coords.zoom);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: ''
+            }).addTo(cityMapInstance);
+            L.marker([coords.lat, coords.lng]).addTo(cityMapInstance)
+                .bindPopup(`<b>${city}</b>`).openPopup();
+        }, 150);
+    }
+
+    function closeCityMap() {
+        document.getElementById('city-map-modal').classList.remove('active');
+        if (cityMapInstance) {
+            cityMapInstance.remove();
+            cityMapInstance = null;
+        }
+    }
+
+    function proceedAfterCityMap() {
+        closeCityMap();
+        checkLoginStatus();
+    }
+
+    // =========================================================
+    //  Products (Supermarket)
+    // =========================================================
+    const supermarketProductsData = [
+        { name: 'دجاج وطني', price: 12, image: 'https://www2.0zz0.com/2025/07/09/18/729995337.jpg', category: 'لحوم ودواجن' },
+        { name: 'لحم غنم', price: 70, image: 'https://www2.0zz0.com/2025/07/09/21/715849870.jpg', category: 'لحوم ودواجن' },
+        { name: 'لحم بقري', price: 60, image: 'https://www2.0zz0.com/2025/07/09/21/715849870.jpg', category: 'لحوم ودواجن' },
+        { name: 'حليب طازج', price: 5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'ألبان وبيض' },
+        { name: 'بيض بلدي', price: 8, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'ألبان وبيض' },
+        { name: 'زبادي', price: 4, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'ألبان وبيض' },
+        { name: 'زيت زيتون', price: 25, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد غذائية' },
+        { name: 'أرز بسمتي', price: 15, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد غذائية' },
+        { name: 'سكر', price: 8, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد غذائية' },
+        { name: 'صابون سائل', price: 7, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد تنظيف' },
+        { name: 'مبيض', price: 5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد تنظيف' },
+        { name: 'مناديل', price: 6, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد تنظيف' },
+        { name: 'طماطم', price: 4, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
+        { name: 'تفاح', price: 9, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
+        { name: 'بطاطس', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' }
+    ];
+
+    function initSupermarketProducts() {
+        const container = document.getElementById('supermarket-products');
+        if (!container) return;
+        container.innerHTML = '';
+        supermarketProductsData.forEach(product => {
+            const card = document.createElement('div');
+            card.classList.add('product-card');
+            card.setAttribute('data-category', product.category);
+            card.setAttribute('data-name', product.name);
+            card.innerHTML = `
+                <img src="${product.image}" alt="${product.name}" class="product-image" />
+                <div class="product-info">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">${product.price} دينار</div>
+                    <button class="add-btn" onclick="addToCart(this, '${product.name}', ${product.price}, '${product.image}')">أضف إلى السلة</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        document.querySelectorAll('#supermarket-categories .category').forEach(cat => {
+            cat.addEventListener('click', function() {
+                document.querySelectorAll('#supermarket-categories .category').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                activeCategory = this.dataset.category;
+                filterSupermarketProducts();
+            });
+        });
+    }
+
+    function filterSupermarketProducts() {
+        const query = (document.getElementById('supermarket-search').value || '').trim().toLowerCase();
+        const cards = document.querySelectorAll('#supermarket-products .product-card');
+        let visible = 0;
+        cards.forEach(card => {
+            const name = (card.getAttribute('data-name') || '').toLowerCase();
+            const cat = card.getAttribute('data-category');
+            const matchesSearch = !query || name.includes(query);
+            const matchesCategory = activeCategory === 'all' || cat === activeCategory;
+            if (matchesSearch && matchesCategory) {
+                card.style.display = 'flex';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        document.getElementById('supermarket-no-results').style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    const sampleRestaurants = {
+        'بنغازي': [
+            { id: 'rest1_benghazi', name: 'مطعم بنغازي الشعبي', description: 'أكلات شعبية ليبية', city: 'بنغازي', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample1' },
+            { id: 'rest2_benghazi', name: 'بيتزا بنغازي', description: 'بيتزا ومعجنات', city: 'بنغازي', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample2' }
+        ],
+        'طرابلس': [
+            { id: 'rest1_tripoli', name: 'مطعم طرابلس البحري', description: 'مأكولات بحرية', city: 'طرابلس', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample3' },
+            { id: 'rest2_tripoli', name: 'مطعم المدينة', description: 'وجبات سريعة', city: 'طرابلس', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample4' }
+        ],
+        'سبها': [
+            { id: 'rest1_sebha', name: 'مطعم سبها', description: 'مأكولات ليبية تقليدية', city: 'سبها', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample5' },
+            { id: 'rest2_sebha', name: 'كافيتريا الواحة', description: 'مشروبات وحلويات', city: 'سبها', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample6' }
+        ]
+    };
+
+    function filterRestaurants() {
+        const query = (document.getElementById('restaurant-search').value || '').trim().toLowerCase();
+        const cards = document.querySelectorAll('#restaurant-list-container .restaurant-card');
+        let visible = 0;
+        cards.forEach(card => {
+            const name = (card.getAttribute('data-name') || '').toLowerCase();
+            const desc = (card.getAttribute('data-desc') || '').toLowerCase();
+            if (!query || name.includes(query) || desc.includes(query)) {
+                card.style.display = 'flex';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        document.getElementById('restaurant-no-results').style.display = visible === 0 && cards.length > 0 ? 'block' : 'none';
+    }
+
+    function filterMenuProducts() {
+        const query = (document.getElementById('menu-search').value || '').trim().toLowerCase();
+        const cards = document.querySelectorAll('#restaurant-menu-products .product-card');
+        let visible = 0;
+        cards.forEach(card => {
+            const name = (card.getAttribute('data-name') || '').toLowerCase();
+            if (!query || name.includes(query)) {
+                card.style.display = 'flex';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        document.getElementById('menu-no-results').style.display = visible === 0 && cards.length > 0 ? 'block' : 'none';
+    }
+
+    const offersProductsData = [
+        { name: 'عرض دجاج وطني', price: 15, oldPrice: 18, image: 'https://www2.0zz0.com/2025/07/09/18/729995337.jpg', category: 'سوبر ماركت' },
+        { name: 'عرض لحم غنم', price: 75, oldPrice: 83, image: 'https://www2.0zz0.com/2025/07/09/21/715849870.jpg', category: 'سوبر ماركت' },
+        { name: 'وجبة عائلية', price: 45, oldPrice: 60, image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', category: 'مطاعم' },
+        { name: 'بيتزا وسط', price: 18, oldPrice: 25, image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', category: 'مطاعم' }
+    ];
+
+    function initOffers() {
+        if (!offersProducts) return;
+        offersProducts.innerHTML = '';
+        offersProductsData.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.classList.add('product-card');
+            productCard.setAttribute('data-category', product.category);
+            productCard.setAttribute('data-name', product.name);
+            productCard.innerHTML = `
+                <div class="offer-badge">عرض</div>
+                <img src="${product.image}" alt="${product.name}" class="product-image" />
+                <div class="product-info">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">
+                        <span class="old-price">${product.oldPrice} دينار</span>
+                        ${product.price} دينار
+                    </div>
+                    <button class="add-btn" onclick="addToCart(this, '${product.name}', ${product.price}, '${product.image}')">أضف إلى السلة</button>
+                </div>
+            `;
+            offersProducts.appendChild(productCard);
+        });
+
+        document.querySelectorAll('#offers-categories .category').forEach(cat => {
+            cat.addEventListener('click', function() {
+                document.querySelectorAll('#offers-categories .category').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                activeOffersCategory = this.dataset.category;
+                filterOffers();
+            });
+        });
+    }
+
+    function filterOffers() {
+        const query = (document.getElementById('offers-search').value || '').trim().toLowerCase();
+        const cards = document.querySelectorAll('#offers-products .product-card');
+        let visible = 0;
+        cards.forEach(card => {
+            const name = (card.getAttribute('data-name') || '').toLowerCase();
+            const cat = card.getAttribute('data-category');
+            const matchesSearch = !query || name.includes(query);
+            const matchesCategory = activeOffersCategory === 'all' || cat === activeOffersCategory;
+            if (matchesSearch && matchesCategory) {
+                card.style.display = 'flex';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        document.getElementById('offers-no-results').style.display = visible === 0 && cards.length > 0 ? 'block' : 'none';
+    }
+
+    function showView(viewId, pushState = true) {
+        if (currentView && views[currentView]) {
+            views[currentView].classList.add('hidden');
+        }
+        
+        if (views[viewId]) {
+            views[viewId].classList.remove('hidden');
+            
+            if (pushState && !isPopState && currentView !== viewId) {
+                history.pushState({ viewId: viewId, city: selectedCity, phone: currentUserPhone }, '', `#${viewId}`);
+            }
+            
+            isPopState = false;
+            currentView = viewId;
+        }
+
+        // Views that show the delivery bar in the header
+        const deliveryViews = ['selection-view','supermarket-view','restaurant-list-view','single-restaurant-menu-view','offers-view'];
+        // Views that also show the search row
+        const searchViews = ['supermarket-view','restaurant-list-view','single-restaurant-menu-view','offers-view'];
+
+        if (viewId === 'login-view' || viewId === 'city-selection-view') {
+            bottomNavbar.classList.remove('visible');
+            hideSmartSearch();
+        } else if (deliveryViews.includes(viewId)) {
+            bottomNavbar.classList.add('visible');
+            if (searchViews.includes(viewId)) {
+                showSmartSearch(viewId);
+            } else {
+                // selection-view: delivery bar only, no search row
+                showDeliveryBarOnly();
+            }
+        } else {
+            // my-orders-view, account-view, etc.
+            bottomNavbar.classList.add('visible');
+            hideSmartSearch();
+        }
+        
+        if (viewId === 'supermarket-view' || viewId === 'single-restaurant-menu-view' || viewId === 'offers-view') {
+            cartButton.classList.remove('hidden');
+        } else {
+            cartButton.classList.add('hidden');
+        }
+
+        if (viewId === 'supermarket-view') {
+            currentShopType = 'supermarket';
+        } else if (viewId === 'single-restaurant-menu-view') {
+            currentShopType = 'restaurant';
+        }
+
+        updateCartButton();
+
+        if (viewId === 'supermarket-view') {
+            activeCategory = 'all';
+            clearGlobalSearch();
+            initSupermarketProducts();
+        } else if (viewId === 'restaurant-list-view') {
+            clearGlobalSearch();
+            renderRestaurantList();
+        } else if (viewId === 'offers-view') {
+            activeOffersCategory = 'all';
+            clearGlobalSearch();
+            initOffers();
+        } else if (viewId === 'my-orders-view') {
+            clearGlobalSearch();
+            loadUserOrders();
+        } else if (viewId === 'selection-view') {
+            clearGlobalSearch();
+            renderDeliveryBar();
+        } else if (viewId === 'services-view') {
+            clearGlobalSearch();
+            closeServiceSubView();
+        } else {
+            clearGlobalSearch();
+        }
+    }
+
+    // =========================================================
+    //  Services Hub Navigation
+    // =========================================================
+    function openServiceSubView(service) {
+        document.getElementById('services-hub').style.display = 'none';
+        if (service === 'taxi') {
+            document.getElementById('services-taxi-subview').style.display = 'block';
+            loadMyTaxiSubscriptions();
+        }
+    }
+
+    function closeServiceSubView() {
+        document.getElementById('services-hub').style.display = 'block';
+        document.getElementById('services-taxi-subview').style.display = 'none';
+    }
+
+    // =========================================================
+    //  Cart helpers — separate cart per context
+    // =========================================================
+    function getCurrentCart() {
+        if (currentShopType === 'restaurant' && currentRestaurantId) {
+            if (!restaurantCarts[currentRestaurantId]) restaurantCarts[currentRestaurantId] = [];
+            return restaurantCarts[currentRestaurantId];
+        }
+        return supermarketCart;
+    }
+
+    function updateCartButton() {
+        const cart = getCurrentCart();
+        cartCount.textContent = cart.length;
+        if (cart.length > 0) {
+            cartButton.classList.remove('hidden');
+            const view = currentView;
+            if (view === 'supermarket-view' || view === 'single-restaurant-menu-view' || view === 'offers-view') {
+                cartButton.classList.remove('hidden');
+            }
+        }
+    }
+
+    // =========================================================
+    //  Taxi Subscription
+    // =========================================================
+    function selectTaxiPackage(pkgKey) {
+        selectedTaxiPackage = pkgKey;
+        ['fast','classic','express'].forEach(k => {
+            const card = document.getElementById(`pkg-${k}`);
+            if (card) card.classList.toggle('selected', k === pkgKey);
+        });
+        const btn = document.getElementById('taxi-subscribe-btn');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = `اشترك الآن - ${taxiPackages[pkgKey].price} دينار`;
+        }
+    }
+
+    async function submitTaxiSubscription() {
+        if (!selectedTaxiPackage) {
+            showToast('الرجاء اختيار باقة أولاً', 'error');
+            return;
+        }
+        if (!currentUserPhone) {
+            showToast('الرجاء تسجيل الدخول أولاً', 'error');
+            return;
+        }
+
+        const pkg = taxiPackages[selectedTaxiPackage];
+        const confirmed = await appConfirm(
+            `هل تريد الاشتراك في باقة "${pkg.name}" بسعر ${pkg.price} دينار شهرياً؟`,
+            '🚕', 'تأكيد الاشتراك'
+        );
+        if (!confirmed) return;
+
+        const subData = {
+            userPhone: currentUserPhone,
+            city: selectedCity || '',
+            packageKey: selectedTaxiPackage,
+            packageName: pkg.name,
+            packageKm: pkg.km,
+            packagePrice: pkg.price,
+            status: 'pending',
+            createdAt: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        try {
+            await database.ref('taxiSubscriptions').push(subData);
+            showToast('تم إرسال طلب الاشتراك بنجاح ✓', 'success', 4000);
+            selectedTaxiPackage = null;
+            ['fast','classic','express'].forEach(k => {
+                const card = document.getElementById(`pkg-${k}`);
+                if (card) card.classList.remove('selected');
+            });
+            const btn = document.getElementById('taxi-subscribe-btn');
+            if (btn) { btn.disabled = true; btn.textContent = 'اشترك الآن'; }
+            loadMyTaxiSubscriptions();
+        } catch (err) {
+            showToast('حدث خطأ، حاول مرة أخرى', 'error');
+        }
+    }
+
+    function loadMyTaxiSubscriptions() {
+        if (!currentUserPhone) return;
+        const listEl = document.getElementById('my-taxi-subs-list');
+        if (!listEl) return;
+        database.ref('taxiSubscriptions')
+            .orderByChild('userPhone').equalTo(currentUserPhone)
+            .once('value', snap => {
+                const subs = snap.val();
+                if (!subs) {
+                    listEl.innerHTML = '<div class="sub-empty">لا توجد اشتراكات بعد</div>';
+                    return;
+                }
+                const arr = Object.entries(subs)
+                    .map(([id, s]) => ({ id, ...s }))
+                    .sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+                listEl.innerHTML = arr.map(s => {
+                    const date = s.createdAt ? new Date(s.createdAt).toLocaleDateString('ar-LY') : '—';
+                    const statusMap = {
+                        pending: ['sub-status-pending','قيد المراجعة'],
+                        approved: ['sub-status-approved','مفعّل'],
+                        rejected: ['sub-status-rejected','مرفوض']
+                    };
+                    const [cls, txt] = statusMap[s.status] || ['sub-status-pending','قيد المراجعة'];
+                    return `<div class="sub-item">
+                        <div class="sub-item-left">
+                            <div class="sub-name">${s.packageName} — ${s.packagePrice} د.ل</div>
+                            <div class="sub-date">${date} · ${s.packageKm} كيلومتر</div>
+                        </div>
+                        <span class="sub-status ${cls}">${txt}</span>
+                    </div>`;
+                }).join('');
+            });
+    }
+
+    // =========================================================
+    //  Unified Sticky Header Logic
+    // =========================================================
+    const smartSearchBar = document.getElementById('smart-search-bar');
+    const globalSearchInput = document.getElementById('global-search-input');
+    const searchClearBtn = document.getElementById('search-clear-btn');
+    const stickyDeliveryBar = document.getElementById('sticky-delivery-bar');
+    const smartSearchRow = document.getElementById('smart-search-row');
+
+    const searchPlaceholders = {
+        'supermarket-view':          'ابحث في المنتجات...',
+        'restaurant-list-view':      'ابحث في المطاعم...',
+        'single-restaurant-menu-view':'ابحث في القائمة...',
+        'offers-view':               'ابحث في العروض...',
+    };
+
+    function showSmartSearch(viewId) {
+        smartSearchBar.classList.remove('hidden');
+        smartSearchBar.classList.remove('scrolled-down');
+        document.body.classList.add('search-bar-visible');
+        document.body.classList.add('delivery-only');
+        globalSearchInput.placeholder = searchPlaceholders[viewId] || 'ابحث...';
+        // Search views: hide delivery bar, show search row only
+        stickyDeliveryBar.classList.add('hidden');
+        smartSearchRow.classList.remove('hidden');
+    }
+
+    function showDeliveryBarOnly() {
+        smartSearchBar.classList.remove('hidden');
+        smartSearchBar.classList.remove('scrolled-down');
+        document.body.classList.add('search-bar-visible');
+        document.body.classList.add('delivery-only');
+        // Delivery row only — hide search row
+        if (currentUserPhone) {
+            stickyDeliveryBar.classList.remove('hidden');
+        }
+        smartSearchRow.classList.add('hidden');
+        renderDeliveryBar();
+    }
+
+    function hideSmartSearch() {
+        smartSearchBar.classList.add('hidden');
+        document.body.classList.remove('search-bar-visible');
+        document.body.classList.remove('delivery-only');
+        stickyDeliveryBar.classList.add('hidden');
+        smartSearchRow.classList.add('hidden');
+    }
+
+    function handleGlobalSearch() {
+        const val = globalSearchInput.value;
+        searchClearBtn.classList.toggle('hidden', val.length === 0);
+
+        if (currentView === 'supermarket-view') {
+            document.getElementById('supermarket-search').value = val;
+            filterSupermarketProducts();
+        } else if (currentView === 'restaurant-list-view') {
+            document.getElementById('restaurant-search').value = val;
+            filterRestaurants();
+        } else if (currentView === 'single-restaurant-menu-view') {
+            document.getElementById('menu-search').value = val;
+            filterMenuProducts();
+        } else if (currentView === 'offers-view') {
+            document.getElementById('offers-search').value = val;
+            filterOffers();
+        } else if (currentView === 'selection-view') {
+            filterSections(val);
+        }
+    }
+
+    function clearGlobalSearch() {
+        globalSearchInput.value = '';
+        searchClearBtn.classList.add('hidden');
+        ['supermarket-search','restaurant-search','menu-search','offers-search'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+    }
+
+    function filterSections(query) {
+        const q = query.trim().toLowerCase();
+        document.querySelectorAll('.section-card').forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+        });
+    }
+
+    // =========================================================
+    //  Delivery Location Bar & Bottom Sheet
+    // =========================================================
+    function getLocEmoji(name) {
+        const n = name.toLowerCase();
+        if (/بيت|منزل|دار|home/.test(n)) return '🏠';
+        if (/عمل|شركة|مكتب|office|work/.test(n)) return '🏢';
+        if (/جامعة|مدرسة|كلية/.test(n)) return '🏫';
+        if (/مسجد|جامع/.test(n)) return '🕌';
+        return '📍';
+    }
+
+    function renderDeliveryBar() {
+        const nameEl = document.getElementById('delivery-bar-name');
+        const iconEl = document.getElementById('delivery-bar-icon');
+        if (!nameEl) return;
+        const saved = localStorage.getItem('savedDeliveryLocations');
+        const locs = saved ? JSON.parse(saved) : [];
+        const curLoc = localStorage.getItem('userLocation') || currentUserLocation;
+        const matched = locs.find(l => l.address === curLoc);
+        if (matched) {
+            nameEl.textContent = matched.name;
+            if (iconEl) iconEl.textContent = getLocEmoji(matched.name);
+        } else if (curLoc) {
+            nameEl.textContent = curLoc.length > 28 ? curLoc.slice(0, 28) + '...' : curLoc;
+            if (iconEl) iconEl.textContent = '📍';
+        } else {
+            nameEl.textContent = 'اختر موقع التوصيل';
+            if (iconEl) iconEl.textContent = '📍';
+        }
+    }
+
+    function openDeliverySheet() {
+        const overlay = document.getElementById('delivery-sheet-overlay');
+        const listEl = document.getElementById('delivery-locations-list');
+        const saved = localStorage.getItem('savedDeliveryLocations');
+        const locs = saved ? JSON.parse(saved) : [];
+        savedDeliveryLocations = locs;
+        const curLoc = localStorage.getItem('userLocation') || currentUserLocation;
+
+        if (locs.length === 0) {
+            listEl.innerHTML = '<div class="delivery-sheet-empty">لا توجد عناوين محفوظة بعد</div>';
+        } else {
+            listEl.innerHTML = locs.map((loc, i) => {
+                const isSelected = loc.address === curLoc;
+                const emoji = getLocEmoji(loc.name);
+                return `<div class="delivery-loc-item${isSelected ? ' selected' : ''}" onclick="selectDeliveryFromSheet(${i})">
+                    <span class="delivery-loc-emoji">${emoji}</span>
+                    <div class="delivery-loc-info">
+                        <div class="delivery-loc-name">${loc.name}</div>
+                        <div class="delivery-loc-addr">${loc.address.length > 35 ? loc.address.slice(0,35)+'...' : loc.address}</div>
+                    </div>
+                    <div class="delivery-loc-check">${isSelected ? '✓' : ''}</div>
+                </div>`;
+            }).join('');
+        }
+        overlay.classList.add('active');
+    }
+
+    function closeDeliverySheet() {
+        document.getElementById('delivery-sheet-overlay').classList.remove('active');
+    }
+
+    function handleDeliverySheetBackdrop(e) {
+        if (e.target === document.getElementById('delivery-sheet-overlay')) closeDeliverySheet();
+    }
+
+    function selectDeliveryFromSheet(index) {
+        const loc = savedDeliveryLocations[index];
+        if (!loc) return;
+        currentUserLocation = loc.address;
+        localStorage.setItem('userLocation', currentUserLocation);
+        if (typeof accountLocationInput !== 'undefined' && accountLocationInput)
+            accountLocationInput.value = currentUserLocation;
+        renderDeliveryBar();
+        closeDeliverySheet();
+        showToast(`التوصيل إلى: ${loc.name} ✓`, 'success', 2500);
+    }
+
+    function addDeliveryFromSheet() {
+        closeDeliverySheet();
+        setTimeout(() => showAddLocationModal(), 220);
+    }
+
+    // Smart scroll hide/show
+    let lastScrollY = 0;
+    let scrollTicking = false;
+    window.addEventListener('scroll', () => {
+        if (!scrollTicking) {
+            requestAnimationFrame(() => {
+                const currentY = window.scrollY;
+                if (currentView !== 'login-view' && currentView !== 'city-selection-view') {
+                    if (currentY > lastScrollY + 6 && currentY > 50) {
+                        smartSearchBar.classList.add('scrolled-down');
+                    } else if (currentY < lastScrollY - 4) {
+                        smartSearchBar.classList.remove('scrolled-down');
+                    }
+                }
+                lastScrollY = currentY;
+                scrollTicking = false;
+            });
+            scrollTicking = true;
+        }
+    }, { passive: true });
+
+    function selectCity(city) {
+        selectedCity = city;
+        pendingCity = city;
+        localStorage.setItem('selectedCity', selectedCity);
+        initializeCityRestaurants(city);
+        openCityMap(city);
+    }
+
+    function initializeCityRestaurants(city) {
+        const restaurantsRef = database.ref('restaurants');
+        restaurantsRef.once('value', (snapshot) => {
+            const existingRestaurants = snapshot.val() || {};
+            const cityRestaurants = sampleRestaurants[city] || [];
+            
+            cityRestaurants.forEach(restaurant => {
+                if (!existingRestaurants[restaurant.id]) {
+                    restaurantsRef.child(restaurant.id).set({
+                        ...restaurant,
+                        products: {
+                            sample1: {
+                                name: 'وجبة برجر',
+                                price: 25,
+                                category: 'وجبات رئيسية',
+                                image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg'
+                            },
+                            sample2: {
+                                name: 'بيتزا عائلية',
+                                price: 40,
+                                category: 'بيتزا',
+                                image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg'
+                            }
+                        },
+                        categories: [
+                            { name: 'وجبات رئيسية', displayName: 'وجبات رئيسية' },
+                            { name: 'بيتزا', displayName: 'بيتزا' },
+                            { name: 'مشروبات', displayName: 'مشروبات' }
+                        ]
+                    });
+                }
+            });
+        });
+    }
+
+    function renderRestaurantList() {
+        if (!restaurantListContainer) return;
+        restaurantListContainer.innerHTML = '';
+        database.ref('restaurants').orderByChild('city').equalTo(selectedCity).once('value', (snapshot) => {
+            const restaurants = snapshot.val();
+            if (!restaurants) {
+                restaurantListContainer.innerHTML = `<p style="text-align: center; color: #666; padding-top: 20px;">لا توجد مطاعم متوفرة في ${selectedCity} حالياً.</p>`;
+                return;
+            }
+
+            Object.keys(restaurants).forEach(restId => {
+                const restaurant = restaurants[restId];
+                const card = document.createElement('div');
+                card.classList.add('restaurant-card');
+                card.setAttribute('data-name', restaurant.name);
+                card.setAttribute('data-desc', restaurant.description || '');
+                card.onclick = () => showRestaurantMenu(restId, restaurant);
+                card.innerHTML = `
+                    <img src="${restaurant.image}" alt="${restaurant.name}" class="restaurant-image">
+                    <div class="restaurant-info">
+                        <h2>${restaurant.name}</h2>
+                        <p>${restaurant.description}</p>
+                    </div>
+                `;
+                restaurantListContainer.appendChild(card);
+            });
+        });
+    }
+
+    async function showRestaurantMenu(restId, restaurant) {
+        currentRestaurantId = restId;
+        showView('single-restaurant-menu-view');
+
+        restaurantMenuTitle.textContent = restaurant.name;
+        restaurantMenuDescription.textContent = restaurant.description;
+        restaurantMenuCategories.innerHTML = '';
+        restaurantMenuProducts.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;">جاري التحميل...</div>';
+
+        // Fetch fresh data from Firebase to get latest categories & products
+        const snap = await database.ref('restaurants').child(restId).once('value');
+        const freshData = snap.val() || restaurant;
+
+        // ---- Normalise categories ----
+        // Restaurant dashboard saves: ["وجبات رئيسية", "مشروبات"]  (array of strings)
+        // Old seeded data saves:      [{name,displayName}, ...]
+        const rawCats = freshData.categories;
+        let normalCats = [];
+        if (Array.isArray(rawCats) && rawCats.length > 0) {
+            normalCats = rawCats.filter(Boolean).map(c =>
+                typeof c === 'string' ? { name: c, displayName: c } : c
+            );
+        } else if (rawCats && typeof rawCats === 'object') {
+            normalCats = Object.values(rawCats).filter(Boolean).map(c =>
+                typeof c === 'string' ? { name: c, displayName: c } : c
+            );
+        }
+
+        // ---- Render category tabs ----
+        const allCategory = document.createElement('div');
+        allCategory.classList.add('category', 'active');
+        allCategory.setAttribute('data-category', 'all');
+        allCategory.textContent = 'كل الأقسام';
+        restaurantMenuCategories.appendChild(allCategory);
+
+        normalCats.forEach(cat => {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.classList.add('category');
+            categoryDiv.setAttribute('data-category', cat.name);
+            categoryDiv.textContent = cat.displayName;
+            restaurantMenuCategories.appendChild(categoryDiv);
+        });
+
+        // ---- Render products ----
+        restaurantMenuProducts.innerHTML = '';
+        const products = freshData.products || {};
+        const productKeys = Object.keys(products);
+
+        if (productKeys.length === 0) {
+            restaurantMenuProducts.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px;">لا توجد منتجات بعد.</p>';
+        } else {
+            productKeys.forEach(productId => {
+                const product = products[productId];
+                const productCard = document.createElement('div');
+                productCard.classList.add('product-card');
+                productCard.setAttribute('data-category', product.category || '');
+                productCard.setAttribute('data-name', product.name || '');
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="product-image" />
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">${product.price} دينار</div>
+                        <button class="add-btn" onclick="addToCart(this, '${(product.name||'').replace(/'/g,"\\'")}', ${product.price}, '${product.image}')">أضف إلى السلة</button>
+                    </div>
+                `;
+                restaurantMenuProducts.appendChild(productCard);
+            });
+        }
+
+        document.getElementById('menu-search').value = '';
+
+        // ---- Category filter click ----
+        document.querySelectorAll('#restaurant-menu-categories .category').forEach(cat => {
+            cat.addEventListener('click', function() {
+                document.querySelectorAll('#restaurant-menu-categories .category').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                const catName = this.dataset.category;
+                document.querySelectorAll('#restaurant-menu-products .product-card').forEach(product => {
+                    product.style.display = (catName === 'all' || product.dataset.category === catName) ? 'flex' : 'none';
+                });
+                document.getElementById('menu-search').value = '';
+                document.getElementById('menu-no-results').style.display = 'none';
+            });
+        });
+    }
+
+    async function submitOrder() {
+        const cart = getCurrentCart();
+        if (cart.length === 0) {
+            appAlert('السلة فارغة', '🛒', '');
+            return;
+        }
+
+        const shopType = currentShopType === 'supermarket' ? 'supermarket' : 'restaurant';
+        
+        let subTotal = 0;
+        const items = cart.map(item => {
+            subTotal += item.price;
+            return { name: item.name, price: item.price, imageUrl: item.imageUrl };
+        });
+
+        const orderData = {
+            userId: currentUserPhone,
+            userName: currentUserPhone,
+            userPhone: currentUserPhone,
+            userLocation: currentUserLocation,
+            userLat: currentUserLat,
+            userLng: currentUserLng,
+            city: selectedCity,
+            shopType: shopType,
+            restaurantId: currentRestaurantId,
+            items: items,
+            subtotal: subTotal,
+            deliveryFee: DELIVERY_FEE,
+            total: subTotal + DELIVERY_FEE,
+            status: 'pending',
+            statusText: 'قيد الانتظار',
+            createdAt: firebase.database.ServerValue.TIMESTAMP,
+            acceptedBy: null,
+            acceptedAt: null,
+            captainAssigned: null
+        };
+
+        if (shopType === 'restaurant' && currentRestaurantId) {
+            const restaurantRef = database.ref('restaurants').child(currentRestaurantId);
+            const snapshot = await restaurantRef.once('value');
+            const restaurant = snapshot.val();
+            if (restaurant) {
+                orderData.restaurantName = restaurant.name;
+                orderData.restaurantLocationLink = restaurant.locationLink || '';
+                orderData.restaurantLat = restaurant.lat || 32.8872;
+                orderData.restaurantLng = restaurant.lng || 20.0668;
+            }
+        }
+
+        try {
+            const newOrderRef = database.ref('orders').push();
+            await newOrderRef.set(orderData);
+            
+            closeCart();
+            showToast('تم استلام طلبك ✓', 'success');
+            if (currentShopType === 'restaurant' && currentRestaurantId) {
+                restaurantCarts[currentRestaurantId] = [];
+            } else {
+                supermarketCart = [];
+            }
+            updateCartButton();
+            
+            const userOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+            userOrders.push(newOrderRef.key);
+            localStorage.setItem('userOrders', JSON.stringify(userOrders));
+            
+        } catch (error) {
+            showToast('حدث خطأ أثناء إرسال الطلب', 'error');
+        }
+    }
+
+    function loadUserOrders() {
+        if (!ordersList) return;
+        ordersList.innerHTML = '';
+        
+        database.ref('orders').orderByChild('userId').equalTo(currentUserPhone).once('value', (snapshot) => {
+            const orders = snapshot.val();
+            
+            if (!orders) {
+                ordersList.innerHTML = `
+                    <div class="empty-orders">
+                        <img src="https://up6.cc/2026/02/177125117181271.png" alt="No orders">
+                        <h3>لا توجد طلبات حتى الآن</h3>
+                        <p>قم بطلبك الأول الآن</p>
+                        <button class="btn-primary" onclick="showView('selection-view')">تصفح المتجر</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const sortedOrders = Object.keys(orders).reverse().map(key => ({ id: key, ...orders[key] }));
+
+            sortedOrders.forEach(order => {
+                const statusClass = {
+                    'pending': 'status-pending',
+                    'accepted': 'status-accepted',
+                    'delivering': 'status-delivering',
+                    'delivered': 'status-delivered'
+                }[order.status] || 'status-pending';
+
+                const statusText = {
+                    'pending': 'قيد الانتظار',
+                    'accepted': 'تم قبول الطلب',
+                    'delivering': 'في الطريق إليك',
+                    'delivered': 'تم التوصيل'
+                }[order.status] || 'قيد الانتظار';
+
+                const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString('ar-LY') : 'غير محدد';
+
+                const itemsId = `items-${order.id.replace(/[.-]/g, '_')}`;
+
+                const orderCard = document.createElement('div');
+                orderCard.classList.add('order-card');
+                orderCard.innerHTML = `
+                    <div class="order-header">
+                        <span class="order-number">طلب #${order.id.slice(-6)}</span>
+                        <span class="order-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="order-details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">عدد الأصناف</span>
+                            <span class="detail-value">${order.items.length}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">المجموع</span>
+                            <span class="detail-value highlight">${order.total} د.ل</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">التوصيل</span>
+                            <span class="detail-value">${order.deliveryFee || DELIVERY_FEE} د.ل</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">التاريخ</span>
+                            <span class="detail-value">${date}</span>
+                        </div>
+                        ${order.restaurantName ? `
+                        <div class="detail-item" style="grid-column: span 2;">
+                            <span class="detail-label">المطعم</span>
+                            <span class="detail-value">${order.restaurantName}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="order-items-summary">
+                        <button class="items-toggle" onclick="toggleOrderItems(this, '${itemsId}')">
+                            <span>▼</span> عرض تفاصيل الأصناف
+                        </button>
+                        <ul id="${itemsId}" class="order-items-list">
+                            ${order.items.map(item => `<li><span>${item.name}</span> <span>${item.price} د.ل</span></li>`).join('')}
+                        </ul>
+                    </div>
+                    <button class="order-track-btn" onclick="trackOrder('${order.id}')">تتبع الطلب</button>
+                `;
+                ordersList.appendChild(orderCard);
+            });
+        });
+    }
+
+    window.toggleOrderItems = function(btn, itemsId) {
+        const list = document.getElementById(itemsId);
+        if (list) {
+            list.classList.toggle('show');
+            btn.querySelector('span').textContent = list.classList.contains('show') ? '▲' : '▼';
+        }
+    };
+
+    function trackOrder(orderId) {
+        database.ref('orders').child(orderId).once('value', (snapshot) => {
+            const order = snapshot.val();
+            if (!order) return;
+
+            const msgMap = {
+                'pending': 'طلبك قيد الانتظار، سيتم تعيين كابتن قريباً',
+                'accepted': 'تم قبول طلبك، الكابتن في طريقه إلى المطعم',
+                'delivering': 'الكابتن في الطريق إليك',
+                'delivered': 'تم توصيل طلبك بنجاح'
+            };
+            const iconMap = {
+                'pending': '⏳', 'accepted': '✅', 'delivering': '🚗', 'delivered': '🎉'
+            };
+            const msg = msgMap[order.status] || '';
+            const icon = iconMap[order.status] || 'ℹ️';
+
+            appAlert(msg, icon);
+        });
+    }
+
+    function addToCart(buttonElement, name, price, imageUrl) {
+        const cart = getCurrentCart();
+        cart.push({ name, price, imageUrl });
+        updateCartButton();
+        showToast(`أُضيف: ${name}`, 'info', 2000);
+    }
+
+    function openCart() {
+        const cart = getCurrentCart();
+        if (cart.length === 0) {
+            appAlert('السلة فارغة', '🛒');
+            return;
+        }
+        renderCart();
+        cartModal.classList.add('active');
+    }
+
+    function closeCart() {
+        cartModal.classList.remove('active');
+    }
+
+    function renderCart() {
+        if (!cartItemsList) return;
+        const cart = getCurrentCart();
+        cartItemsList.innerHTML = '';
+        let subTotal = 0;
+        cart.forEach((item, index) => {
+            subTotal += item.price;
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <img src="${item.imageUrl}" alt="${item.name}" class="cart-item-image">
+                <div class="cart-item-details">
+                    <span class="cart-item-name">${item.name}</span>
+                    <span class="cart-item-price">${item.price} دينار</span>
+                </div>
+            `;
+            li.onclick = () => {
+                appConfirm('هل تريد حذف هذا المنتج؟', '🗑️').then(confirmed => {
+                    if (confirmed) {
+                        cart.splice(index, 1);
+                        updateCartButton();
+                        renderCart();
+                    }
+                });
+            };
+            cartItemsList.appendChild(li);
+        });
+        cartTotalElement.textContent = `المجموع الفرعي: ${subTotal.toFixed(2)} دينار`;
+        deliveryFeeElement.textContent = `سعر التوصيل: ${DELIVERY_FEE.toFixed(2)} دينار`;
+        grandTotalElement.textContent = `الإجمالي الكلي: ${(subTotal + DELIVERY_FEE).toFixed(2)} دينار`;
+    }
+
+    function handleLogin() {
+        const phoneNumber = document.getElementById('phone-number').value.trim();
+        const userLocation = document.getElementById('user-location').value.trim();
+        const errorElement = document.getElementById('login-error');
+
+        if (!phoneNumber || !userLocation) {
+            errorElement.textContent = 'الرجاء إدخال رقم الهاتف والموقع.';
+            errorElement.classList.remove('hidden');
+            return;
+        }
+
+        if (!/^(9\d{8})$/.test(phoneNumber)) {
+            errorElement.textContent = 'رقم الهاتف غير صحيح. يرجى إدخال 9 أرقام تبدأ بـ 9.';
+            errorElement.classList.remove('hidden');
+            return;
+        }
+
+        currentUserPhone = '218' + phoneNumber;
+        currentUserLocation = userLocation;
+        currentUserLat = document.getElementById('user-lat').value || null;
+        currentUserLng = document.getElementById('user-lng').value || null;
+
+        localStorage.setItem('userPhone', currentUserPhone);
+        localStorage.setItem('userLocation', currentUserLocation);
+        if (currentUserLat && currentUserLng) {
+            localStorage.setItem('userLat', currentUserLat);
+            localStorage.setItem('userLng', currentUserLng);
+        }
+
+        errorElement.classList.add('hidden');
+        showView('selection-view');
+    }
+
+    function checkLoginStatus() {
+        selectedCity = localStorage.getItem('selectedCity');
+        const savedPhone = localStorage.getItem('userPhone');
+        const savedLocation = localStorage.getItem('userLocation');
+        const savedLat = localStorage.getItem('userLat');
+        const savedLng = localStorage.getItem('userLng');
+
+        if (!selectedCity) {
+            showView('city-selection-view');
+        } else if (savedPhone && savedLocation) {
+            currentUserPhone = savedPhone;
+            currentUserLocation = savedLocation;
+            currentUserLat = savedLat;
+            currentUserLng = savedLng;
+            // Show pickup location modal on each login
+            showPickupModal();
+        } else {
+            showView('login-view');
+        }
+    }
+
+    function showAccountView() {
+        if (!currentUserPhone || !currentUserLocation) {
+            appAlert('يرجى تسجيل الدخول أولاً.', '🔒').then(() => showView('login-view'));
+            return;
+        }
+        const displayPhone = currentUserPhone.startsWith('218') ? currentUserPhone.substring(3) : currentUserPhone;
+        
+        accountPhoneInput.value = displayPhone;
+        accountLocationInput.value = currentUserLocation;
+        accountCityInput.value = selectedCity;
+        accountLatInput.value = currentUserLat || '';
+        accountLngInput.value = currentUserLng || '';
+        toggleEditAccount(false);
+        accountStatus.classList.add('hidden');
+        loadSavedLocations();
+        showView('account-view');
+    }
+
+    function toggleEditAccount(isEditing) {
+        accountPhoneInput.readOnly = !isEditing;
+        accountLocationInput.readOnly = !isEditing;
+        accountCityInput.readOnly = true;
+
+        if (isEditing) {
+            editAccountBtn.classList.add('hidden');
+            saveAccountBtn.classList.remove('hidden');
+            accountLocationStatusElement.classList.remove('hidden');
+            accountLocationButtons.style.display = 'flex';
+            accountLocationStatusElement.textContent = '📍 اضغط هنا لتحديد موقعك على الخريطة';
+            accountLocationStatusElement.className = 'location-placeholder';
+        } else {
+            editAccountBtn.classList.remove('hidden');
+            saveAccountBtn.classList.add('hidden');
+            accountLocationStatusElement.classList.add('hidden');
+            accountLocationButtons.style.display = 'none';
+        }
+    }
+
+    function saveAccountInfo() {
+        let newPhone = accountPhoneInput.value.trim();
+        const newLocation = accountLocationInput.value.trim();
+
+        if (!newPhone || !newLocation) {
+            accountStatus.textContent = 'الرجاء إدخال رقم الهاتف والموقع.';
+            accountStatus.classList.remove('hidden');
+            return;
+        }
+
+        if (!/^(9\d{8})$/.test(newPhone)) {
+            accountStatus.textContent = 'رقم الهاتف غير صحيح.';
+            accountStatus.classList.remove('hidden');
+            return;
+        }
+
+        currentUserPhone = '218' + newPhone;
+        currentUserLocation = newLocation;
+        localStorage.setItem('userPhone', currentUserPhone);
+        localStorage.setItem('userLocation', currentUserLocation);
+
+        toggleEditAccount(false);
+        showToast('تم حفظ التعديلات ✓', 'success');
+        accountStatus.classList.add('hidden');
+    }
+
+    function editCityFromAccount() {
+        history.pushState({ viewId: 'account-view' }, '', '#account-view');
+        showView('city-selection-view');
+    }
+
+    function loadSavedLocations() {
+        const saved = localStorage.getItem('savedDeliveryLocations');
+        savedDeliveryLocations = saved ? JSON.parse(saved) : [];
+        renderSavedLocations();
+    }
+
+    function renderSavedLocations() {
+        if (!savedLocationsList) return;
+        savedLocationsList.innerHTML = '';
+        if (savedDeliveryLocations.length === 0) {
+            noSavedLocationsMessage.classList.remove('hidden');
+            return;
+        }
+        noSavedLocationsMessage.classList.add('hidden');
+
+        savedDeliveryLocations.forEach((loc, index) => {
+            const isSelected = (loc.address === currentUserLocation);
+            const locDiv = document.createElement('div');
+            locDiv.classList.add('saved-location-item');
+            if (isSelected) locDiv.classList.add('selected');
+            locDiv.onclick = () => setCurrentDeliveryLocation(index);
+            locDiv.innerHTML = `<span>${loc.name}: ${loc.address}</span>`;
+            savedLocationsList.appendChild(locDiv);
+        });
+    }
+
+    function showAddLocationModal() {
+        addLocationModal.classList.add('active');
+        locationNameInput.value = '';
+        newSavedLocationAddressInput.value = '';
+        newSavedLocationLatInput.value = '';
+        newSavedLocationLngInput.value = '';
+        newSavedLocationStatus.textContent = '📍 اختر موقعك على الخريطة';
+        newSavedLocationStatus.className = 'location-placeholder';
+    }
+
+    function closeAddLocationModal() {
+        addLocationModal.classList.remove('active');
+    }
+
+    function saveNewDeliveryLocation() {
+        const name = locationNameInput.value.trim();
+        const address = newSavedLocationAddressInput.value.trim();
+
+        if (!name || !address) {
+            showToast('الرجاء إدخال اسم وعنوان الموقع', 'error');
+            return;
+        }
+
+        savedDeliveryLocations.push({ name, address });
+        localStorage.setItem('savedDeliveryLocations', JSON.stringify(savedDeliveryLocations));
+        renderSavedLocations();
+        renderDeliveryBar();
+        closeAddLocationModal();
+        showToast('تم حفظ الموقع ✓', 'success');
+    }
+
+    function setCurrentDeliveryLocation(index) {
+        const selectedLoc = savedDeliveryLocations[index];
+        currentUserLocation = selectedLoc.address;
+        localStorage.setItem('userLocation', currentUserLocation);
+        accountLocationInput.value = currentUserLocation;
+        renderSavedLocations();
+        renderDeliveryBar();
+        showToast(`تم تحديد: ${selectedLoc.name}`, 'success', 2500);
+    }
+
+    // =========================================================
+    //  Map Modal (for location picking)
+    // =========================================================
+    function openMapModal(source) {
+        currentMapSource = source;
+        mapModal.classList.add('active');
+        
+        setTimeout(() => {
+            const mapContainer = document.getElementById('leaflet-map');
+            if (!mapContainer) return;
+
+            if (mapInstance) {
+                mapInstance.remove();
+                mapInstance = null;
+            }
+
+            // الإحداثيات الافتراضية: المدينة المختارة أو بنغازي إن لم تُحدَّد
+            const cityDefault = cityCoords[selectedCity] || cityCoords['بنغازي'];
+            const defaultLat = cityDefault.lat;
+            const defaultLng = cityDefault.lng;
+
+            let lat, lng;
+            if (source === 'login') {
+                lat = parseFloat(userLatInput.value) || defaultLat;
+                lng = parseFloat(userLngInput.value) || defaultLng;
+            } else if (source === 'account') {
+                lat = parseFloat(accountLatInput.value) || defaultLat;
+                lng = parseFloat(accountLngInput.value) || defaultLng;
+            } else {
+                lat = parseFloat(newSavedLocationLatInput.value) || defaultLat;
+                lng = parseFloat(newSavedLocationLngInput.value) || defaultLng;
+            }
+
+            mapInstance = L.map('leaflet-map', { attributionControl: false }).setView([lat, lng], 15);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: ''
+            }).addTo(mapInstance);
+
+            mapMarker = L.marker([lat, lng], { draggable: true }).addTo(mapInstance);
+            
+            mapMarker.on('dragend', function(e) {
+                const pos = e.target.getLatLng();
+                mapSelectedLat = pos.lat;
+                mapSelectedLng = pos.lng;
+                mapCoordsDisplay.innerHTML = `الإحداثيات: ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+            });
+
+            mapInstance.on('click', function(e) {
+                const pos = e.latlng;
+                mapMarker.setLatLng(pos);
+                mapSelectedLat = pos.lat;
+                mapSelectedLng = pos.lng;
+                mapCoordsDisplay.innerHTML = `الإحداثيات: ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+            });
+
+            mapCoordsDisplay.innerHTML = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            mapSelectedLat = lat;
+            mapSelectedLng = lng;
+        }, 100);
+    }
+
+    function closeMapModal() {
+        mapModal.classList.remove('active');
+        if (mapInstance) {
+            mapInstance.remove();
+            mapInstance = null;
+        }
+        mapMarker = null;
+    }
+
+    function selectMapLocation() {
+        if (!mapSelectedLat || !mapSelectedLng) {
+            showToast('الرجاء اختيار موقع على الخريطة', 'error');
+            return;
+        }
+
+        if (currentMapSource === 'login') {
+            userLatInput.value = mapSelectedLat.toFixed(6);
+            userLngInput.value = mapSelectedLng.toFixed(6);
+            userLocationInput.value = `موقع مختار: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
+            document.getElementById('login-coords-hint').textContent = `الإحداثيات: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
+            locationStatusElement.textContent = '✅ تم تحديد الموقع عبر الخريطة';
+            locationStatusElement.className = 'location-placeholder success';
+        } else if (currentMapSource === 'account') {
+            accountLatInput.value = mapSelectedLat.toFixed(6);
+            accountLngInput.value = mapSelectedLng.toFixed(6);
+            accountLocationInput.value = `موقع مختار: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
+            document.getElementById('account-coords-hint').textContent = `الإحداثيات: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
+            accountLocationStatusElement.textContent = '✅ تم تحديث الموقع عبر الخريطة';
+            accountLocationStatusElement.className = 'location-placeholder success';
+        } else if (currentMapSource === 'new-location') {
+            newSavedLocationLatInput.value = mapSelectedLat.toFixed(6);
+            newSavedLocationLngInput.value = mapSelectedLng.toFixed(6);
+            newSavedLocationAddressInput.value = `موقع مختار: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
+            document.getElementById('new-location-coords-hint').textContent = `الإحداثيات: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
+            newSavedLocationStatus.textContent = '✅ تم تحديد الموقع عبر الخريطة';
+            newSavedLocationStatus.className = 'location-placeholder success';
+        }
+
+        showToast('تم تحديد الموقع ✓', 'success');
+        closeMapModal();
+    }
+
+    function handleManualLocationInput() {
+        const manualLocation = userLocationInput.value.trim();
+        if (manualLocation) {
+            locationStatusElement.textContent = '📝 تم إدخال الموقع يدوياً';
+            locationStatusElement.className = 'location-placeholder';
+        }
+    }
+
+    function handleManualNewLocationInput() {
+        const manualLocation = newSavedLocationAddressInput.value.trim();
+        if (manualLocation) {
+            newSavedLocationStatus.textContent = '📝 تم إدخال الموقع يدوياً';
+            newSavedLocationStatus.className = 'location-placeholder';
+        }
+    }
+
+    function openSupportModal() {
+        if (!currentUserPhone) {
+            supportPhoneGroup.classList.remove('hidden');
+        } else {
+            supportPhoneGroup.classList.add('hidden');
+        }
+        supportModal.classList.add('active');
+    }
+
+    function closeSupportModal() {
+        supportModal.classList.remove('active');
+    }
+
+    if (supportForm) {
+        supportForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const message = complaintMessageInput.value.trim();
+            let phone = currentUserPhone || (supportPhoneInput.value ? '218' + supportPhoneInput.value : '');
+
+            if (!message) {
+                showToast('الرجاء كتابة الرسالة', 'error');
+                return;
+            }
+
+            if (!phone) {
+                showToast('الرجاء إدخال رقم الهاتف', 'error');
+                return;
+            }
+
+            const complaintData = {
+                phone: phone,
+                message: message,
+                city: selectedCity || '',
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            try {
+                await database.ref('complaints').push(complaintData);
+                closeSupportModal();
+                showToast('تم إرسال رسالتك ✓', 'success');
+                complaintMessageInput.value = '';
+                supportPhoneInput.value = '';
+            } catch (error) {
+                showToast('حدث خطأ، حاول مرة أخرى', 'error');
+            }
+        });
+    }
+
+    // =========================================================
+    //  Ads Banner Carousel
+    // =========================================================
+    let adsIndex = 0;
+    let adsTotal = 0;
+    let adsAutoTimer = null;
+    let adsTouchStartX = 0;
+    let adsDragging = false;
+
+    function initAdsBanner() {
+        const track = document.getElementById('ads-track');
+        const dotsEl = document.getElementById('ads-dots');
+        const slides = track ? track.querySelectorAll('.ad-slide') : [];
+        adsTotal = slides.length;
+        if (!adsTotal) return;
+
+        // Build dots
+        dotsEl.innerHTML = '';
+        slides.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'ads-dot' + (i === 0 ? ' active' : '');
+            dot.onclick = () => adsGoTo(i);
+            dotsEl.appendChild(dot);
+        });
+
+        // Touch / swipe support
+        const wrapper = track.parentElement;
+        wrapper.addEventListener('touchstart', e => {
+            adsTouchStartX = e.touches[0].clientX;
+            adsDragging = true;
+            clearInterval(adsAutoTimer);
+        }, { passive: true });
+        wrapper.addEventListener('touchend', e => {
+            if (!adsDragging) return;
+            const diff = adsTouchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 40) adsSlide(diff > 0 ? 1 : -1);
+            adsDragging = false;
+            adsStartAuto();
+        }, { passive: true });
+
+        // Link click
+        slides.forEach(slide => {
+            slide.addEventListener('click', () => {
+                const link = slide.getAttribute('data-link');
+                if (link && link.startsWith('http')) window.open(link, '_blank');
+            });
+        });
+
+        adsGoTo(0);
+        adsStartAuto();
+    }
+
+    function adsGoTo(idx) {
+        const track = document.getElementById('ads-track');
+        if (!track) return;
+        adsIndex = (idx + adsTotal) % adsTotal;
+        track.style.transform = `translateX(-${adsIndex * 100}%)`;
+        document.querySelectorAll('.ads-dot').forEach((d, i) => {
+            d.classList.toggle('active', i === adsIndex);
+        });
+    }
+
+    function adsSlide(dir) {
+        adsGoTo(adsIndex + dir);
+        adsStartAuto();
+    }
+
+    function adsStartAuto() {
+        clearInterval(adsAutoTimer);
+        adsAutoTimer = setInterval(() => adsGoTo(adsIndex + 1), 3500);
+    }
+
+    window.onload = function() {
+        checkLoginStatus();
+        initSupermarketProducts();
+        initAdsBanner();
+    };
+
+    window.addEventListener('popstate', (event) => {
+        if (cartModal.classList.contains('active')) {
+            cartModal.classList.remove('active');
+            return;
+        }
+        if (event.state && event.state.viewId) {
+            isPopState = true;
+            selectedCity = event.state.city || selectedCity;
+            currentUserPhone = event.state.phone || currentUserPhone;
+            showView(event.state.viewId, false);
+        } else {
+            checkLoginStatus();
+        }
+    });
+</script>
+</body>
+</html>
