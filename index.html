@@ -1957,9 +1957,9 @@
             <div class="category active" data-category="all">كل الأقسام</div>
             <div class="category" data-category="لحوم ودواجن">لحوم ودواجن</div>
             <div class="category" data-category="ألبان وبيض">ألبان وبيض</div>
-            <div class="category" data-category="مواد غذائية">مواد غذائية</div>
-            <div class="category" data-category="مواد تنظيف">مواد تنظيف</div>
             <div class="category" data-category="خضروات وفواكه">خضروات وفواكه</div>
+             <div class="category" data-category="مخبوزات">مخبوزات</div>
+             <div class="category" data-category="مياه">مياه</div>
         </div>
         <div class="products supermarket-products" id="supermarket-products"></div>
         <div class="no-results-msg" id="supermarket-no-results">لا توجد نتائج مطابقة للبحث</div>
@@ -2456,21 +2456,23 @@
     //  Products (Supermarket)
     // =========================================================
     const supermarketProductsData = [
-        { name: 'دجاج وطني', price: 12, image: 'https://www2.0zz0.com/2025/07/09/18/729995337.jpg', category: 'لحوم ودواجن' },
+        { name: 'دجاج وطني', price: 23, image: 'https://www2.0zz0.com/2025/07/09/18/729995337.jpg', category: 'لحوم ودواجن' },
         { name: 'لحم غنم', price: 70, image: 'https://www2.0zz0.com/2025/07/09/21/715849870.jpg', category: 'لحوم ودواجن' },
-        { name: 'لحم بقري', price: 60, image: 'https://www2.0zz0.com/2025/07/09/21/715849870.jpg', category: 'لحوم ودواجن' },
-        { name: 'حليب طازج', price: 5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'ألبان وبيض' },
-        { name: 'بيض بلدي', price: 8, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'ألبان وبيض' },
-        { name: 'زبادي', price: 4, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'ألبان وبيض' },
-        { name: 'زيت زيتون', price: 25, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد غذائية' },
-        { name: 'أرز بسمتي', price: 15, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد غذائية' },
-        { name: 'سكر', price: 8, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد غذائية' },
-        { name: 'صابون سائل', price: 7, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد تنظيف' },
-        { name: 'مبيض', price: 5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد تنظيف' },
-        { name: 'مناديل', price: 6, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مواد تنظيف' },
-        { name: 'طماطم', price: 4, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
-        { name: 'تفاح', price: 9, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
-        { name: 'بطاطس', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' }
+        { name: 'طبق بيض', price: 17, image: 'https://up6.cc/2026/08/178667085498361.png', category: 'ألبان وبيض' },
+        { name: 'طماطم', price: 4, image: 'https://up6.cc/2026/08/178667043987891.jpg', category: 'خضروات وفواكه' },
+        { name: 'بصل', price: 9, image: 'https://up6.cc/2026/08/1786670775641.jpg', category: 'خضروات وفواكه' },
+        { name: 'بطاطا', price: 3, image: 'https://up6.cc/2026/08/178667103723131.jpg', category: 'خضروات وفواكه' },
+        { name: 'فلفل', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
+        { name: 'خيار', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
+        { name: 'كوسة', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
+        { name: 'بادنجان', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
+        { name: 'ربطة خبزة طويلة', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مخبوزات' },
+        { name: 'توست عادي', price: 5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مخبوزات' },
+        { name: 'توست حبة كاملة', price: 6.5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مخبوزات' },
+        { name: 'نوست شوفان', price: 6.5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مخبوزات' },
+        { name: 'ربطة خبزة مدورة', price: 2, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مخبوزات' },
+        { name: 'بانقة مياه العين', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مياه' },
+        { name: 'استيكة مياه العين 12', price: 5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مياه' },
     ];
 
     function initSupermarketProducts() {
