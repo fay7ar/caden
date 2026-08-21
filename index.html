@@ -40,7 +40,7 @@
     .hidden {
       display: none !important;
     }
-    #login-view, #city-selection-view {
+    #login-view {
       padding-top: 50px;
       text-align: center;
     }
@@ -349,9 +349,10 @@
     }
     .cart-item-details {
         flex-grow: 1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+         display: grid;
+         grid-template-columns: minmax(0, 1fr) auto auto;
+         align-items: center;
+         gap: 8px;
     }
     .cart-item-name {
         font-weight: 600;
@@ -361,6 +362,37 @@
         font-weight: 700;
         color: #27ae60;
         white-space: nowrap;
+    }
+    .cart-item-unit-price {
+         color: #888;
+         font-size: 12px;
+         margin-top: 3px;
+    }
+    .cart-item-actions {
+         display: flex;
+         align-items: center;
+         gap: 6px;
+         direction: ltr;
+    }
+    .cart-quantity-btn {
+         width: 28px;
+         height: 28px;
+         border: 1px solid #007bff;
+         border-radius: 8px;
+         background: #eef6ff;
+         color: #0056b3;
+         font-size: 19px;
+         line-height: 1;
+         cursor: pointer;
+    }
+    .cart-quantity-btn:hover {
+         background: #007bff;
+         color: white;
+    }
+    .cart-quantity {
+         min-width: 20px;
+         text-align: center;
+         font-weight: 700;
     }
     #cart-total, #delivery-fee, #grand-total {
       font-weight: 700;
@@ -724,89 +756,6 @@
         color: #333;
     }
 
-    /* ========== City Map Modal ========== */
-    .city-map-modal {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.7);
-        z-index: 4500;
-        justify-content: center;
-        align-items: center;
-        padding: 10px;
-    }
-    .city-map-modal.active { display: flex; }
-    .city-map-container {
-        width: 100%;
-        max-width: 600px;
-        height: 80vh;
-        background: white;
-        border-radius: 15px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
-    .city-map-header {
-        background: #007bff;
-        color: white;
-        padding: 15px 18px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .city-map-header h3 {
-        margin: 0;
-        font-size: 18px;
-        color: white;
-    }
-    .city-map-close {
-        background: rgba(255,255,255,0.2);
-        border: none;
-        color: white;
-        font-size: 20px;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    #city-leaflet-map {
-        flex: 1;
-        width: 100%;
-    }
-    .city-map-footer {
-        background: white;
-        padding: 14px;
-        display: flex;
-        gap: 10px;
-        border-top: 1px solid #eee;
-    }
-    .city-map-proceed-btn {
-        flex: 2;
-        padding: 12px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-weight: bold;
-        font-size: 15px;
-        cursor: pointer;
-    }
-    .city-map-proceed-btn:hover { background-color: #0056b3; }
-    .city-map-cancel-btn {
-        flex: 1;
-        padding: 12px;
-        background-color: #eee;
-        color: #333;
-        border: none;
-        border-radius: 10px;
-        font-weight: bold;
-        font-size: 15px;
-        cursor: pointer;
-    }
-
     .notification-pop-up {
         display: none;
         position: fixed;
@@ -828,65 +777,6 @@
     .notification-pop-up.show {
         display: block;
         opacity: 1;
-    }
-    .city-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        max-width: 300px;
-        margin: 30px auto;
-    }
-    .city-btn {
-        padding: 15px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-size: 18px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-    .city-btn:hover {
-        background-color: #0056b3;
-    }
-    .restaurant-list {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        padding-top: 30px;
-    }
-    .restaurant-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        overflow: hidden;
-        cursor: pointer;
-        transition: transform 0.3s, box-shadow 0.3s;
-        text-align: right;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-    .restaurant-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    }
-    .restaurant-image {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 10px;
-        flex-shrink: 0;
-    }
-    .restaurant-info h2 {
-        font-size: 22px;
-        margin-bottom: 5px;
-    }
-    .restaurant-info p {
-        color: #666;
-        font-size: 15px;
     }
     .saved-location-item {
         display: flex;
@@ -1001,6 +891,31 @@
         gap: 10px;
         border-top: 1px solid #eee;
         z-index: 2;
+    }
+    .map-location-name-wrap {
+         flex: 2;
+         text-align: right;
+    }
+    .map-location-name-wrap label {
+         display: block;
+         margin-bottom: 5px;
+         color: #333;
+         font-size: 13px;
+         font-weight: 700;
+    }
+    #map-location-name {
+         width: 100%;
+         box-sizing: border-box;
+         padding: 10px;
+         border: 1px solid #ddd;
+         border-radius: 8px;
+         font: inherit;
+         direction: rtl;
+    }
+    #map-coords-display {
+         color: #28a745;
+         font-size: 12px;
+         margin-top: 5px;
     }
     .map-select-btn {
         background-color: #007bff;
@@ -1227,85 +1142,6 @@
     .leaflet-control-attribution {
         display: none !important;
     }
-
-    /* ===== Services & Taxi Subscription ===== */
-    .services-view-header {
-        text-align: center;
-        padding: 30px 15px 20px;
-    }
-    .services-view-header h1 { font-size: 24px; color: #2c3e50; margin-bottom: 8px; }
-    .services-view-header p { color: #777; font-size: 14px; }
-
-    .service-section-title {
-        font-size: 18px; font-weight: 700; color: #2c3e50;
-        margin: 20px 0 14px; display: flex; align-items: center; gap: 8px;
-    }
-
-    .taxi-packages-container {
-        display: flex; flex-direction: column; gap: 18px; margin-bottom: 30px;
-    }
-
-    .taxi-package-card {
-        background: white; border-radius: 18px;
-        box-shadow: 0 5px 18px rgba(0,0,0,0.09);
-        padding: 20px; display: flex; align-items: center; gap: 16px;
-        cursor: pointer; transition: transform 0.25s, box-shadow 0.25s;
-        border: 2px solid transparent; position: relative; overflow: hidden;
-    }
-    .taxi-package-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.14);
-    }
-    .taxi-package-card.selected {
-        border-color: #007bff;
-        background: #f0f6ff;
-    }
-    .taxi-package-icon {
-        width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;
-        border-radius: 12px;
-    }
-    .taxi-package-info { flex: 1; }
-    .taxi-package-name { font-size: 18px; font-weight: 700; color: #1a2b4c; margin-bottom: 5px; }
-    .taxi-package-km { font-size: 14px; color: #555; margin-bottom: 8px; }
-    .taxi-package-price {
-        font-size: 22px; font-weight: 800; color: #007bff;
-    }
-    .taxi-package-price span { font-size: 14px; font-weight: 500; color: #888; }
-    .taxi-select-btn {
-        position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-        width: 26px; height: 26px; border-radius: 50%;
-        border: 2px solid #ddd; display: flex; align-items: center; justify-content: center;
-        font-size: 13px; color: transparent; transition: all 0.2s;
-    }
-    .taxi-package-card.selected .taxi-select-btn {
-        border-color: #007bff; background: #007bff; color: white;
-    }
-
-    .taxi-subscribe-btn {
-        width: 100%; padding: 16px; background: #007bff; color: white;
-        border: none; border-radius: 14px; font-size: 17px; font-weight: 700;
-        cursor: pointer; margin-top: 5px; margin-bottom: 30px;
-        transition: background 0.3s, transform 0.2s; box-shadow: 0 4px 14px rgba(0,123,255,0.3);
-    }
-    .taxi-subscribe-btn:hover { background: #0056b3; transform: translateY(-2px); }
-    .taxi-subscribe-btn:disabled { background: #aaa; cursor: not-allowed; transform: none; }
-
-    .taxi-my-subs { background: white; border-radius: 14px; padding: 18px; box-shadow: 0 3px 12px rgba(0,0,0,0.07); margin-bottom: 30px; }
-    .taxi-my-subs h3 { font-size: 16px; color: #1a2b4c; margin-bottom: 14px; }
-    .sub-item {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px;
-    }
-    .sub-item:last-child { border-bottom: none; }
-    .sub-item-left .sub-name { font-weight: 700; color: #222; }
-    .sub-item-left .sub-date { font-size: 12px; color: #aaa; margin-top: 2px; }
-    .sub-status {
-        padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-    }
-    .sub-status-pending { background: #fff3cd; color: #856404; }
-    .sub-status-approved { background: #d4edda; color: #155724; }
-    .sub-status-rejected { background: #f8d7da; color: #721c24; }
-    .sub-empty { text-align: center; padding: 20px; color: #aaa; font-size: 14px; }
 
     /* ===== Unified Sticky Header (delivery + search) ===== */
     .smart-search-bar {
@@ -1749,21 +1585,6 @@
     </div>
 </div>
 
-<!-- ===== City Map Modal ===== -->
-<div id="city-map-modal" class="city-map-modal">
-    <div class="city-map-container">
-        <div class="city-map-header">
-            <h3 id="city-map-title">خريطة المدينة</h3>
-            <button class="city-map-close" onclick="closeCityMap()">×</button>
-        </div>
-        <div id="city-leaflet-map"></div>
-        <div class="city-map-footer">
-            <button class="city-map-cancel-btn" onclick="closeCityMap()">إلغاء</button>
-            <button class="city-map-proceed-btn" onclick="proceedAfterCityMap()">ابدأ الطلب من هذه المدينة</button>
-        </div>
-    </div>
-</div>
-
 <!-- ===== Unified Sticky Header (delivery + search) ===== -->
 <div id="smart-search-bar" class="smart-search-bar hidden">
     <div class="sticky-header-rows">
@@ -1843,7 +1664,11 @@
         </div>
         <div id="leaflet-map"></div>
         <div class="map-footer">
-            <div style="flex:2; text-align:center;" id="map-coords-display"></div>
+            <div class="map-location-name-wrap">
+                <label for="map-location-name">اسم الموقع (مطلوب)</label>
+                <input type="text" id="map-location-name" placeholder="مثال: المنزل أو العمل" autocomplete="off">
+                <div id="map-coords-display">سيتم حفظ الإحداثيات بشكل آمن دون عرضها</div>
+            </div>
             <button class="map-cancel-btn" onclick="closeMapModal()">إلغاء</button>
             <button class="map-select-btn" onclick="selectMapLocation()">تأكيد الموقع</button>
         </div>
@@ -1851,18 +1676,6 @@
 </div>
 
 <div class="view-container">
-
-    <div id="city-selection-view" class="hidden">
-        <header>
-            <h1>اختر مدينتك</h1>
-            <p>يرجى اختيار المدينة التي تود الطلب منها.</p>
-        </header>
-        <div class="city-buttons">
-            <button class="city-btn" onclick="selectCity('بنغازي')">بنغازي</button>
-            <button class="city-btn" onclick="selectCity('طرابلس')">طرابلس</button>
-            <button class="city-btn" onclick="selectCity('سبها')">سبها</button>
-        </div>
-    </div>
 
     <div id="login-view" class="hidden">
         <header>
@@ -1931,18 +1744,11 @@
                     <p>تسوق البقالة والمنتجات اليومية.</p>
                 </div>
             </div>
-            <div class="section-card" onclick="showView('restaurant-list-view')">
-                <img src="https://www2.0zz0.com/2025/07/11/14/146112310.jpg" alt="Restaurant" class="section-image">
+            <div class="section-card" onclick="showView('experimental-view')">
+                <img src="https://up6.cc/2026/02/177125070989171.jpeg" alt="تجريبي" class="section-image">
                 <div class="section-info">
-                    <h2>قسم المطاعم</h2>
-                    <p>اطلب وجباتك المفضلة والمأكولات اللذيذة.</p>
-                </div>
-            </div>
-            <div class="section-card" onclick="showView('offers-view')">
-                <img src="https://up6.cc/2026/02/177125070989171.jpeg" alt="Offers" class="section-image">
-                <div class="section-info">
-                    <h2>قسم العروض</h2>
-                    <p>اكتشف أحدث العروض والتخفيضات.</p>
+                    <h2>قسم تجريبي</h2>
+                    <p>منتجات تجريبية لاختبار الطلب والسلة.</p>
                 </div>
             </div>
         </div>
@@ -1965,40 +1771,19 @@
         <div class="no-results-msg" id="supermarket-no-results">لا توجد نتائج مطابقة للبحث</div>
     </div>
     
-    <div id="restaurant-list-view" class="hidden">
+    <div id="experimental-view" class="hidden">
         <header>
-            <h1>قائمة المطاعم</h1>
-            <p>اختر مطعمك المفضل لتصفح قائمته.</p>
+            <h1>قسم تجريبي</h1>
+            <p>منتجات تجريبية جاهزة للاختبار</p>
         </header>
-        <input type="hidden" id="restaurant-search">
-        <div class="restaurant-list" id="restaurant-list-container"></div>
-        <div class="no-results-msg" id="restaurant-no-results">لا توجد مطاعم مطابقة للبحث</div>
-    </div>
-
-    <div id="single-restaurant-menu-view" class="hidden">
-        <header>
-            <h1 id="restaurant-menu-title"></h1>
-            <p id="restaurant-menu-description"></p>
-        </header>
-        <input type="hidden" id="menu-search">
-        <div class="categories restaurant-categories" id="restaurant-menu-categories"></div>
-        <div class="products restaurant-products" id="restaurant-menu-products"></div>
-        <div class="no-results-msg" id="menu-no-results">لا توجد نتائج مطابقة للبحث</div>
-    </div>
-
-    <div id="offers-view" class="hidden">
-        <header>
-            <h1>قسم العروض</h1>
-            <p>عروض وتخفيضات حصرية</p>
-        </header>
-        <input type="hidden" id="offers-search">
-        <div class="categories offers-categories" id="offers-categories">
-            <div class="category active" data-category="all">كل العروض</div>
-            <div class="category" data-category="سوبر ماركت">عروض السوبر ماركت</div>
-            <div class="category" data-category="مطاعم">عروض المطاعم</div>
+        <input type="hidden" id="experimental-search">
+        <div class="categories experimental-categories" id="experimental-categories">
+            <div class="category active" data-category="all">كل المنتجات</div>
+            <div class="category" data-category="إلكترونيات">إلكترونيات</div>
+            <div class="category" data-category="منزل">منزل</div>
         </div>
-        <div class="products offers-products" id="offers-products"></div>
-        <div class="no-results-msg" id="offers-no-results">لا توجد نتائج مطابقة للبحث</div>
+        <div class="products experimental-products" id="experimental-products"></div>
+        <div class="no-results-msg" id="experimental-no-results">لا توجد نتائج مطابقة للبحث</div>
     </div>
 
     <div id="my-orders-view" class="hidden">
@@ -2036,12 +1821,6 @@
                 <input type="hidden" id="account-lng">
                 <div class="coords-hint" id="account-coords-hint"></div>
             </div>
-            <div class="input-group">
-                <label for="account-city">المدينة:</label>
-                <input type="text" id="account-city" readonly>
-                <button class="btn-primary" id="edit-city-btn" onclick="editCityFromAccount()">تغيير المدينة</button>
-            </div>
-
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
             <div class="input-group">
@@ -2091,15 +1870,15 @@
             <label for="location-name">اسم الموقع (مثال: البيت، العمل):</label>
             <input type="text" id="location-name" placeholder="ادخل اسم الموقع" required>
         </div>
-        <div class="input-group">
-            <label for="new-saved-location-address">عنوان الموقع:</label>
+            <div class="input-group">
+                <label for="new-saved-location-address">اسم الموقع الظاهر:</label>
             <div class="location-buttons">
                 <button type="button" class="location-btn" onclick="openMapModal('new-location')">🗺️ تحديد على الخريطة</button>
             </div>
             <div class="location-placeholder" id="new-saved-location-status" onclick="openMapModal('new-location')">
                 📍 اختر موقعك على الخريطة
             </div>
-            <input type="text" id="new-saved-location-address" placeholder="أو أدخل العنوان يدوياً" required oninput="handleManualNewLocationInput()">
+                <input type="text" id="new-saved-location-address" placeholder="اختر الموقع من الخريطة ليظهر اسمه" required readonly>
             <input type="hidden" id="new-saved-location-lat">
             <input type="hidden" id="new-saved-location-lng">
             <div class="coords-hint" id="new-location-coords-hint"></div>
@@ -2116,10 +1895,6 @@
     <img src="https://www2.0zz0.com/2025/07/11/13/446983323.png" alt="الرئيسية" class="icon">
     <span>الرئيسية</span>
   </div>
-  <div class="nav-item" onclick="showView('services-view')">
-    <img src="https://up6.cc/2026/05/177954423891771.png" alt="خدمات" class="icon">
-    <span>خدمات</span>
-  </div>
   <div class="nav-item" onclick="showView('my-orders-view')">
     <img src="https://up6.cc/2026/02/177126257413781.png" alt="طلباتي" class="icon">
     <span>طلباتي</span>
@@ -2127,94 +1902,6 @@
   <div class="nav-item" onclick="showAccountView()">
     <img src="https://www2.0zz0.com/2025/07/11/13/103393482.png" alt="حسابي" class="icon">
     <span>حسابي</span>
-  </div>
-</div>
-
-<!-- Services View (Hub) -->
-<div id="services-view" class="view hidden" style="padding: 0 16px; padding-bottom: 90px;">
-
-  <!-- Services Hub -->
-  <div id="services-hub">
-    <div class="services-view-header">
-      <h1>🛎️ خدماتنا</h1>
-      <p>اختر الخدمة التي تريد</p>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; padding-top: 10px;">
-      <div onclick="openServiceSubView('taxi')" style="background: white; border-radius: 18px; box-shadow: 0 5px 18px rgba(0,0,0,0.09); padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s; border: 2px solid transparent;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 10px 25px rgba(0,0,0,0.14)'" onmouseout="this.style.transform='';this.style.boxShadow='0 5px 18px rgba(0,0,0,0.09)'">
-        <img src="https://www2.0zz0.com/2025/07/12/05/541825192.png" alt="تاكسي" style="width:70px; height:70px; object-fit:contain; border-radius:12px;">
-        <div style="font-size:17px; font-weight:700; color:#1a2b4c; text-align:center;">تاكسي كادن</div>
-        <div style="font-size:13px; color:#888; text-align:center;">اشتراكات التنقل الذكي</div>
-      </div>
-      <div style="background: #f7f8fa; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity:0.55; border: 2px dashed #ddd;">
-        <div style="font-size:48px;">🚚</div>
-        <div style="font-size:17px; font-weight:700; color:#aaa; text-align:center;">توصيل سريع</div>
-        <div style="font-size:12px; color:#bbb; text-align:center;">قريباً</div>
-      </div>
-      <div style="background: #f7f8fa; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity:0.55; border: 2px dashed #ddd;">
-        <div style="font-size:48px;">🧹</div>
-        <div style="font-size:17px; font-weight:700; color:#aaa; text-align:center;">خدمات المنزل</div>
-        <div style="font-size:12px; color:#bbb; text-align:center;">قريباً</div>
-      </div>
-      <div style="background: #f7f8fa; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity:0.55; border: 2px dashed #ddd;">
-        <div style="font-size:48px;">💊</div>
-        <div style="font-size:17px; font-weight:700; color:#aaa; text-align:center;">صيدلية</div>
-        <div style="font-size:12px; color:#bbb; text-align:center;">قريباً</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Taxi Sub-View -->
-  <div id="services-taxi-subview" style="display:none;">
-    <div style="display:flex; align-items:center; gap:10px; padding: 20px 0 10px;">
-      <button onclick="closeServiceSubView()" style="background:#eef3ff; border:none; border-radius:50%; width:36px; height:36px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">‹</button>
-      <div>
-        <div style="font-size:18px; font-weight:700; color:#1a2b4c;">🚕 تاكسي كادن</div>
-        <div style="font-size:13px; color:#888;">اشترك في الباقة المناسبة لك</div>
-      </div>
-    </div>
-
-    <div class="service-section-title">باقات الاشتراك الشهري</div>
-
-    <div class="taxi-packages-container">
-      <div class="taxi-package-card" id="pkg-fast" onclick="selectTaxiPackage('fast')">
-        <img src="https://www2.0zz0.com/2025/07/12/05/541825192.png" alt="كادن فاست" class="taxi-package-icon">
-        <div class="taxi-package-info">
-          <div class="taxi-package-name">كادن فاست</div>
-          <div class="taxi-package-km">📍 حتى 60 كيلومتر</div>
-          <div class="taxi-package-price">50 <span>دينار / شهر</span></div>
-        </div>
-        <div class="taxi-select-btn">✓</div>
-      </div>
-
-      <div class="taxi-package-card" id="pkg-classic" onclick="selectTaxiPackage('classic')">
-        <img src="https://www2.0zz0.com/2025/07/12/05/146751369.png" alt="كادن كلاسيك" class="taxi-package-icon">
-        <div class="taxi-package-info">
-          <div class="taxi-package-name">كادن كلاسيك</div>
-          <div class="taxi-package-km">📍 حتى 100 كيلومتر</div>
-          <div class="taxi-package-price">80 <span>دينار / شهر</span></div>
-        </div>
-        <div class="taxi-select-btn">✓</div>
-      </div>
-
-      <div class="taxi-package-card" id="pkg-express" onclick="selectTaxiPackage('express')">
-        <img src="https://www2.0zz0.com/2025/07/12/05/612921223.png" alt="كادن اكسبريس" class="taxi-package-icon">
-        <div class="taxi-package-info">
-          <div class="taxi-package-name">كادن اكسبريس</div>
-          <div class="taxi-package-km">📍 حتى 150 كيلومتر</div>
-          <div class="taxi-package-price">120 <span>دينار / شهر</span></div>
-        </div>
-        <div class="taxi-select-btn">✓</div>
-      </div>
-    </div>
-
-    <button class="taxi-subscribe-btn" id="taxi-subscribe-btn" onclick="submitTaxiSubscription()" disabled>
-      اشترك الآن
-    </button>
-
-    <div class="taxi-my-subs">
-      <h3>🗂️ اشتراكاتي السابقة</h3>
-      <div id="my-taxi-subs-list"><div class="sub-empty">لا توجد اشتراكات بعد</div></div>
-    </div>
   </div>
 </div>
 
@@ -2238,52 +1925,32 @@
     let currentUserLocation = '';
     let currentUserLat = null;
     let currentUserLng = null;
-    let selectedCity = '';
-    let pendingCity = '';
-    let currentView = 'city-selection-view';
+     // Kept for backwards-compatible order records; there is no city picker in the customer UI.
+     let selectedCity = '';
+     let currentView = 'login-view';
     let isPopState = false;
     let supermarketCart = [];
-    let restaurantCarts = {};
+     let experimentalCart = [];
     let currentShopType = 'supermarket';
     const DELIVERY_FEE = 10;
-    let currentRestaurantId = null;
+     let currentRestaurantId = null;
     let savedDeliveryLocations = [];
     let currentMapSource = '';
     let mapSelectedLat = null;
     let mapSelectedLng = null;
     let mapInstance = null;
     let mapMarker = null;
-    let cityMapInstance = null;
     let activeCategory = 'all';
-    let activeOffersCategory = 'all';
-
-    // City coordinates for OpenStreetMap
-    const cityCoords = {
-        'بنغازي': { lat: 32.1167, lng: 20.0667, zoom: 13 },
-        'طرابلس': { lat: 32.9081, lng: 13.1808, zoom: 13 },
-        'سبها':   { lat: 27.0377, lng: 14.4283, zoom: 13 }
-    };
+     let activeExperimentalCategory = 'all';
 
     // DOM Elements
     const views = {
-        'city-selection-view': document.getElementById('city-selection-view'),
         'login-view': document.getElementById('login-view'),
         'selection-view': document.getElementById('selection-view'),
         'supermarket-view': document.getElementById('supermarket-view'),
-        'restaurant-list-view': document.getElementById('restaurant-list-view'),
-        'single-restaurant-menu-view': document.getElementById('single-restaurant-menu-view'),
-        'offers-view': document.getElementById('offers-view'),
+         'experimental-view': document.getElementById('experimental-view'),
         'my-orders-view': document.getElementById('my-orders-view'),
-        'account-view': document.getElementById('account-view'),
-        'services-view': document.getElementById('services-view')
-    };
-    
-    // Taxi subscription state
-    let selectedTaxiPackage = null;
-    const taxiPackages = {
-        fast:    { name: 'كادن فاست',    km: 60,  price: 50 },
-        classic: { name: 'كادن كلاسيك', km: 100, price: 80 },
-        express: { name: 'كادن اكسبريس', km: 150, price: 120 }
+         'account-view': document.getElementById('account-view')
     };
     const cartButton = document.getElementById('cart-button');
     const cartCount = document.getElementById('cart-count');
@@ -2299,7 +1966,6 @@
     const userLngInput = document.getElementById('user-lng');
     const accountPhoneInput = document.getElementById('account-phone');
     const accountLocationInput = document.getElementById('account-location');
-    const accountCityInput = document.getElementById('account-city');
     const editAccountBtn = document.getElementById('edit-account-btn');
     const saveAccountBtn = document.getElementById('save-account-btn');
     const accountStatus = document.getElementById('account-status');
@@ -2314,12 +1980,8 @@
     const complaintMessageInput = document.getElementById('complaint-message');
     const mapModal = document.getElementById('map-modal');
     const mapCoordsDisplay = document.getElementById('map-coords-display');
-    const restaurantListContainer = document.getElementById('restaurant-list-container');
-    const restaurantMenuTitle = document.getElementById('restaurant-menu-title');
-    const restaurantMenuDescription = document.getElementById('restaurant-menu-description');
-    const restaurantMenuCategories = document.getElementById('restaurant-menu-categories');
-    const restaurantMenuProducts = document.getElementById('restaurant-menu-products');
-    const offersProducts = document.getElementById('offers-products');
+     const experimentalProducts = document.getElementById('experimental-products');
+     const mapLocationNameInput = document.getElementById('map-location-name');
     const ordersList = document.getElementById('orders-list');
     const addLocationModal = document.getElementById('add-location-modal');
     const locationNameInput = document.getElementById('location-name');
@@ -2398,7 +2060,7 @@
         // عرض اسم الموقع المحفوظ إن وُجد، وإلا عرض العنوان
         const saved = localStorage.getItem('savedDeliveryLocations');
         const locs = saved ? JSON.parse(saved) : [];
-        const matched = locs.find(l => l.address === currentUserLocation);
+        const matched = locs.find(l => l.address === currentUserLocation || l.name === currentUserLocation);
         const displayName = matched ? matched.name : (currentUserLocation || 'غير محدد');
         document.getElementById('pickup-current-location-text').textContent = displayName;
         overlay.classList.add('active');
@@ -2416,43 +2078,6 @@
     }
 
     // =========================================================
-    //  City Map on OpenStreetMap
-    // =========================================================
-    function openCityMap(city) {
-        const coords = cityCoords[city];
-        if (!coords) return;
-        document.getElementById('city-map-title').textContent = `خريطة ${city}`;
-        document.getElementById('city-map-modal').classList.add('active');
-
-        setTimeout(() => {
-            if (cityMapInstance) {
-                cityMapInstance.remove();
-                cityMapInstance = null;
-            }
-            cityMapInstance = L.map('city-leaflet-map', { attributionControl: false })
-                .setView([coords.lat, coords.lng], coords.zoom);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: ''
-            }).addTo(cityMapInstance);
-            L.marker([coords.lat, coords.lng]).addTo(cityMapInstance)
-                .bindPopup(`<b>${city}</b>`).openPopup();
-        }, 150);
-    }
-
-    function closeCityMap() {
-        document.getElementById('city-map-modal').classList.remove('active');
-        if (cityMapInstance) {
-            cityMapInstance.remove();
-            cityMapInstance = null;
-        }
-    }
-
-    function proceedAfterCityMap() {
-        closeCityMap();
-        checkLoginStatus();
-    }
-
-    // =========================================================
     //  Products (Supermarket)
     // =========================================================
     const supermarketProductsData = [
@@ -2462,10 +2087,10 @@
         { name: 'طماطم', price: 4, image: 'https://up6.cc/2026/08/178667043987891.jpg', category: 'خضروات وفواكه' },
         { name: 'بصل', price: 9, image: 'https://up6.cc/2026/08/1786670775641.jpg', category: 'خضروات وفواكه' },
         { name: 'بطاطا', price: 3, image: 'https://up6.cc/2026/08/178667103723131.jpg', category: 'خضروات وفواكه' },
-        { name: 'فلفل', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
-        { name: 'خيار', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
-        { name: 'كوسة', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
-        { name: 'بادنجان', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'خضروات وفواكه' },
+        { name: 'فلفل', price: 3, image: 'https://up6.cc/2026/08/178674596199291.jpg', category: 'خضروات وفواكه' },
+        { name: 'خيار', price: 3, image: 'https://up6.cc/2026/08/178674608361911.jpg', category: 'خضروات وفواكه' },
+        { name: 'كوسة', price: 3, image: 'https://up6.cc/2026/08/178674632454621.jpg', category: 'خضروات وفواكه' },
+        { name: 'باذنجان', price: 3, image: 'https://up6.cc/2026/08/178674648812491.jpg', category: 'خضروات وفواكه' },
         { name: 'ربطة خبزة طويلة', price: 3, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مخبوزات' },
         { name: 'توست عادي', price: 5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مخبوزات' },
         { name: 'توست حبة كاملة', price: 6.5, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'مخبوزات' },
@@ -2524,111 +2149,55 @@
         document.getElementById('supermarket-no-results').style.display = visible === 0 ? 'block' : 'none';
     }
 
-    const sampleRestaurants = {
-        'بنغازي': [
-            { id: 'rest1_benghazi', name: 'مطعم بنغازي الشعبي', description: 'أكلات شعبية ليبية', city: 'بنغازي', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample1' },
-            { id: 'rest2_benghazi', name: 'بيتزا بنغازي', description: 'بيتزا ومعجنات', city: 'بنغازي', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample2' }
-        ],
-        'طرابلس': [
-            { id: 'rest1_tripoli', name: 'مطعم طرابلس البحري', description: 'مأكولات بحرية', city: 'طرابلس', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample3' },
-            { id: 'rest2_tripoli', name: 'مطعم المدينة', description: 'وجبات سريعة', city: 'طرابلس', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample4' }
-        ],
-        'سبها': [
-            { id: 'rest1_sebha', name: 'مطعم سبها', description: 'مأكولات ليبية تقليدية', city: 'سبها', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample5' },
-            { id: 'rest2_sebha', name: 'كافيتريا الواحة', description: 'مشروبات وحلويات', city: 'سبها', image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', locationLink: 'https://maps.app.goo.gl/sample6' }
-        ]
-    };
-
-    function filterRestaurants() {
-        const query = (document.getElementById('restaurant-search').value || '').trim().toLowerCase();
-        const cards = document.querySelectorAll('#restaurant-list-container .restaurant-card');
-        let visible = 0;
-        cards.forEach(card => {
-            const name = (card.getAttribute('data-name') || '').toLowerCase();
-            const desc = (card.getAttribute('data-desc') || '').toLowerCase();
-            if (!query || name.includes(query) || desc.includes(query)) {
-                card.style.display = 'flex';
-                visible++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        document.getElementById('restaurant-no-results').style.display = visible === 0 && cards.length > 0 ? 'block' : 'none';
-    }
-
-    function filterMenuProducts() {
-        const query = (document.getElementById('menu-search').value || '').trim().toLowerCase();
-        const cards = document.querySelectorAll('#restaurant-menu-products .product-card');
-        let visible = 0;
-        cards.forEach(card => {
-            const name = (card.getAttribute('data-name') || '').toLowerCase();
-            if (!query || name.includes(query)) {
-                card.style.display = 'flex';
-                visible++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        document.getElementById('menu-no-results').style.display = visible === 0 && cards.length > 0 ? 'block' : 'none';
-    }
-
-    const offersProductsData = [
-        { name: 'عرض دجاج وطني', price: 15, oldPrice: 18, image: 'https://www2.0zz0.com/2025/07/09/18/729995337.jpg', category: 'سوبر ماركت' },
-        { name: 'عرض لحم غنم', price: 75, oldPrice: 83, image: 'https://www2.0zz0.com/2025/07/09/21/715849870.jpg', category: 'سوبر ماركت' },
-        { name: 'وجبة عائلية', price: 45, oldPrice: 60, image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', category: 'مطاعم' },
-        { name: 'بيتزا وسط', price: 18, oldPrice: 25, image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg', category: 'مطاعم' }
+    const experimentalProductsData = [
+        { name: 'سماعة تجريبية', price: 35, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'إلكترونيات' },
+        { name: 'مصباح مكتبي', price: 28, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'منزل' },
+        { name: 'حامل هاتف', price: 12, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'إلكترونيات' },
+        { name: 'منظم أغراض', price: 18, image: 'https://www2.0zz0.com/2025/07/11/13/209714786.png', category: 'منزل' }
     ];
 
-    function initOffers() {
-        if (!offersProducts) return;
-        offersProducts.innerHTML = '';
-        offersProductsData.forEach(product => {
+    function initExperimentalProducts() {
+        if (!experimentalProducts) return;
+        experimentalProducts.innerHTML = '';
+        experimentalProductsData.forEach(product => {
             const productCard = document.createElement('div');
             productCard.classList.add('product-card');
             productCard.setAttribute('data-category', product.category);
             productCard.setAttribute('data-name', product.name);
             productCard.innerHTML = `
-                <div class="offer-badge">عرض</div>
                 <img src="${product.image}" alt="${product.name}" class="product-image" />
                 <div class="product-info">
                     <div class="product-name">${product.name}</div>
-                    <div class="product-price">
-                        <span class="old-price">${product.oldPrice} دينار</span>
-                        ${product.price} دينار
-                    </div>
+                    <div class="product-price">${product.price} دينار</div>
                     <button class="add-btn" onclick="addToCart(this, '${product.name}', ${product.price}, '${product.image}')">أضف إلى السلة</button>
                 </div>
             `;
-            offersProducts.appendChild(productCard);
+            experimentalProducts.appendChild(productCard);
         });
 
-        document.querySelectorAll('#offers-categories .category').forEach(cat => {
+        document.querySelectorAll('#experimental-categories .category').forEach(cat => {
             cat.addEventListener('click', function() {
-                document.querySelectorAll('#offers-categories .category').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('#experimental-categories .category').forEach(c => c.classList.remove('active'));
                 this.classList.add('active');
-                activeOffersCategory = this.dataset.category;
-                filterOffers();
+                activeExperimentalCategory = this.dataset.category;
+                filterExperimentalProducts();
             });
         });
     }
 
-    function filterOffers() {
-        const query = (document.getElementById('offers-search').value || '').trim().toLowerCase();
-        const cards = document.querySelectorAll('#offers-products .product-card');
+    function filterExperimentalProducts() {
+        const query = (document.getElementById('experimental-search').value || '').trim().toLowerCase();
+        const cards = document.querySelectorAll('#experimental-products .product-card');
         let visible = 0;
         cards.forEach(card => {
             const name = (card.getAttribute('data-name') || '').toLowerCase();
             const cat = card.getAttribute('data-category');
             const matchesSearch = !query || name.includes(query);
-            const matchesCategory = activeOffersCategory === 'all' || cat === activeOffersCategory;
-            if (matchesSearch && matchesCategory) {
-                card.style.display = 'flex';
-                visible++;
-            } else {
-                card.style.display = 'none';
-            }
+            const matchesCategory = activeExperimentalCategory === 'all' || cat === activeExperimentalCategory;
+            card.style.display = matchesSearch && matchesCategory ? 'flex' : 'none';
+            if (matchesSearch && matchesCategory) visible++;
         });
-        document.getElementById('offers-no-results').style.display = visible === 0 && cards.length > 0 ? 'block' : 'none';
+        document.getElementById('experimental-no-results').style.display = visible === 0 && cards.length > 0 ? 'block' : 'none';
     }
 
     function showView(viewId, pushState = true) {
@@ -2648,11 +2217,11 @@
         }
 
         // Views that show the delivery bar in the header
-        const deliveryViews = ['selection-view','supermarket-view','restaurant-list-view','single-restaurant-menu-view','offers-view'];
+        const deliveryViews = ['selection-view','supermarket-view','experimental-view'];
         // Views that also show the search row
-        const searchViews = ['supermarket-view','restaurant-list-view','single-restaurant-menu-view','offers-view'];
+        const searchViews = ['supermarket-view','experimental-view'];
 
-        if (viewId === 'login-view' || viewId === 'city-selection-view') {
+        if (viewId === 'login-view') {
             bottomNavbar.classList.remove('visible');
             hideSmartSearch();
         } else if (deliveryViews.includes(viewId)) {
@@ -2669,7 +2238,7 @@
             hideSmartSearch();
         }
         
-        if (viewId === 'supermarket-view' || viewId === 'single-restaurant-menu-view' || viewId === 'offers-view') {
+        if (viewId === 'supermarket-view' || viewId === 'experimental-view') {
             cartButton.classList.remove('hidden');
         } else {
             cartButton.classList.add('hidden');
@@ -2677,8 +2246,8 @@
 
         if (viewId === 'supermarket-view') {
             currentShopType = 'supermarket';
-        } else if (viewId === 'single-restaurant-menu-view') {
-            currentShopType = 'restaurant';
+        } else if (viewId === 'experimental-view') {
+            currentShopType = 'experimental';
         }
 
         updateCartButton();
@@ -2687,158 +2256,41 @@
             activeCategory = 'all';
             clearGlobalSearch();
             initSupermarketProducts();
-        } else if (viewId === 'restaurant-list-view') {
+        } else if (viewId === 'experimental-view') {
+            activeExperimentalCategory = 'all';
             clearGlobalSearch();
-            renderRestaurantList();
-        } else if (viewId === 'offers-view') {
-            activeOffersCategory = 'all';
-            clearGlobalSearch();
-            initOffers();
+            initExperimentalProducts();
         } else if (viewId === 'my-orders-view') {
             clearGlobalSearch();
             loadUserOrders();
         } else if (viewId === 'selection-view') {
             clearGlobalSearch();
             renderDeliveryBar();
-        } else if (viewId === 'services-view') {
-            clearGlobalSearch();
-            closeServiceSubView();
         } else {
             clearGlobalSearch();
         }
     }
 
     // =========================================================
-    //  Services Hub Navigation
-    // =========================================================
-    function openServiceSubView(service) {
-        document.getElementById('services-hub').style.display = 'none';
-        if (service === 'taxi') {
-            document.getElementById('services-taxi-subview').style.display = 'block';
-            loadMyTaxiSubscriptions();
-        }
-    }
-
-    function closeServiceSubView() {
-        document.getElementById('services-hub').style.display = 'block';
-        document.getElementById('services-taxi-subview').style.display = 'none';
-    }
-
-    // =========================================================
-    //  Cart helpers — separate cart per context
+    //  Cart helpers — separate cart per shop
     // =========================================================
     function getCurrentCart() {
-        if (currentShopType === 'restaurant' && currentRestaurantId) {
-            if (!restaurantCarts[currentRestaurantId]) restaurantCarts[currentRestaurantId] = [];
-            return restaurantCarts[currentRestaurantId];
-        }
-        return supermarketCart;
+        return currentShopType === 'experimental' ? experimentalCart : supermarketCart;
     }
 
     function updateCartButton() {
         const cart = getCurrentCart();
-        cartCount.textContent = cart.length;
-        if (cart.length > 0) {
+        const itemCount = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+        cartCount.textContent = itemCount;
+        if (itemCount > 0) {
             cartButton.classList.remove('hidden');
             const view = currentView;
-            if (view === 'supermarket-view' || view === 'single-restaurant-menu-view' || view === 'offers-view') {
+            if (view === 'supermarket-view' || view === 'experimental-view') {
                 cartButton.classList.remove('hidden');
             }
+        } else {
+            cartButton.classList.add('hidden');
         }
-    }
-
-    // =========================================================
-    //  Taxi Subscription
-    // =========================================================
-    function selectTaxiPackage(pkgKey) {
-        selectedTaxiPackage = pkgKey;
-        ['fast','classic','express'].forEach(k => {
-            const card = document.getElementById(`pkg-${k}`);
-            if (card) card.classList.toggle('selected', k === pkgKey);
-        });
-        const btn = document.getElementById('taxi-subscribe-btn');
-        if (btn) {
-            btn.disabled = false;
-            btn.textContent = `اشترك الآن - ${taxiPackages[pkgKey].price} دينار`;
-        }
-    }
-
-    async function submitTaxiSubscription() {
-        if (!selectedTaxiPackage) {
-            showToast('الرجاء اختيار باقة أولاً', 'error');
-            return;
-        }
-        if (!currentUserPhone) {
-            showToast('الرجاء تسجيل الدخول أولاً', 'error');
-            return;
-        }
-
-        const pkg = taxiPackages[selectedTaxiPackage];
-        const confirmed = await appConfirm(
-            `هل تريد الاشتراك في باقة "${pkg.name}" بسعر ${pkg.price} دينار شهرياً؟`,
-            '🚕', 'تأكيد الاشتراك'
-        );
-        if (!confirmed) return;
-
-        const subData = {
-            userPhone: currentUserPhone,
-            city: selectedCity || '',
-            packageKey: selectedTaxiPackage,
-            packageName: pkg.name,
-            packageKm: pkg.km,
-            packagePrice: pkg.price,
-            status: 'pending',
-            createdAt: firebase.database.ServerValue.TIMESTAMP
-        };
-
-        try {
-            await database.ref('taxiSubscriptions').push(subData);
-            showToast('تم إرسال طلب الاشتراك بنجاح ✓', 'success', 4000);
-            selectedTaxiPackage = null;
-            ['fast','classic','express'].forEach(k => {
-                const card = document.getElementById(`pkg-${k}`);
-                if (card) card.classList.remove('selected');
-            });
-            const btn = document.getElementById('taxi-subscribe-btn');
-            if (btn) { btn.disabled = true; btn.textContent = 'اشترك الآن'; }
-            loadMyTaxiSubscriptions();
-        } catch (err) {
-            showToast('حدث خطأ، حاول مرة أخرى', 'error');
-        }
-    }
-
-    function loadMyTaxiSubscriptions() {
-        if (!currentUserPhone) return;
-        const listEl = document.getElementById('my-taxi-subs-list');
-        if (!listEl) return;
-        database.ref('taxiSubscriptions')
-            .orderByChild('userPhone').equalTo(currentUserPhone)
-            .once('value', snap => {
-                const subs = snap.val();
-                if (!subs) {
-                    listEl.innerHTML = '<div class="sub-empty">لا توجد اشتراكات بعد</div>';
-                    return;
-                }
-                const arr = Object.entries(subs)
-                    .map(([id, s]) => ({ id, ...s }))
-                    .sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
-                listEl.innerHTML = arr.map(s => {
-                    const date = s.createdAt ? new Date(s.createdAt).toLocaleDateString('ar-LY') : '—';
-                    const statusMap = {
-                        pending: ['sub-status-pending','قيد المراجعة'],
-                        approved: ['sub-status-approved','مفعّل'],
-                        rejected: ['sub-status-rejected','مرفوض']
-                    };
-                    const [cls, txt] = statusMap[s.status] || ['sub-status-pending','قيد المراجعة'];
-                    return `<div class="sub-item">
-                        <div class="sub-item-left">
-                            <div class="sub-name">${s.packageName} — ${s.packagePrice} د.ل</div>
-                            <div class="sub-date">${date} · ${s.packageKm} كيلومتر</div>
-                        </div>
-                        <span class="sub-status ${cls}">${txt}</span>
-                    </div>`;
-                }).join('');
-            });
     }
 
     // =========================================================
@@ -2852,9 +2304,7 @@
 
     const searchPlaceholders = {
         'supermarket-view':          'ابحث في المنتجات...',
-        'restaurant-list-view':      'ابحث في المطاعم...',
-        'single-restaurant-menu-view':'ابحث في القائمة...',
-        'offers-view':               'ابحث في العروض...',
+         'experimental-view':        'ابحث في المنتجات التجريبية...',
     };
 
     function showSmartSearch(viewId) {
@@ -2896,15 +2346,9 @@
         if (currentView === 'supermarket-view') {
             document.getElementById('supermarket-search').value = val;
             filterSupermarketProducts();
-        } else if (currentView === 'restaurant-list-view') {
-            document.getElementById('restaurant-search').value = val;
-            filterRestaurants();
-        } else if (currentView === 'single-restaurant-menu-view') {
-            document.getElementById('menu-search').value = val;
-            filterMenuProducts();
-        } else if (currentView === 'offers-view') {
-            document.getElementById('offers-search').value = val;
-            filterOffers();
+        } else if (currentView === 'experimental-view') {
+            document.getElementById('experimental-search').value = val;
+            filterExperimentalProducts();
         } else if (currentView === 'selection-view') {
             filterSections(val);
         }
@@ -2913,7 +2357,7 @@
     function clearGlobalSearch() {
         globalSearchInput.value = '';
         searchClearBtn.classList.add('hidden');
-        ['supermarket-search','restaurant-search','menu-search','offers-search'].forEach(id => {
+        ['supermarket-search','experimental-search'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
@@ -2946,7 +2390,7 @@
         const saved = localStorage.getItem('savedDeliveryLocations');
         const locs = saved ? JSON.parse(saved) : [];
         const curLoc = localStorage.getItem('userLocation') || currentUserLocation;
-        const matched = locs.find(l => l.address === curLoc);
+        const matched = locs.find(l => l.address === curLoc || l.name === curLoc);
         if (matched) {
             nameEl.textContent = matched.name;
             if (iconEl) iconEl.textContent = getLocEmoji(matched.name);
@@ -2971,13 +2415,13 @@
             listEl.innerHTML = '<div class="delivery-sheet-empty">لا توجد عناوين محفوظة بعد</div>';
         } else {
             listEl.innerHTML = locs.map((loc, i) => {
-                const isSelected = loc.address === curLoc;
+                const isSelected = loc.address === curLoc || loc.name === curLoc;
                 const emoji = getLocEmoji(loc.name);
                 return `<div class="delivery-loc-item${isSelected ? ' selected' : ''}" onclick="selectDeliveryFromSheet(${i})">
                     <span class="delivery-loc-emoji">${emoji}</span>
                     <div class="delivery-loc-info">
                         <div class="delivery-loc-name">${loc.name}</div>
-                        <div class="delivery-loc-addr">${loc.address.length > 35 ? loc.address.slice(0,35)+'...' : loc.address}</div>
+                        <div class="delivery-loc-addr">${loc.name}</div>
                     </div>
                     <div class="delivery-loc-check">${isSelected ? '✓' : ''}</div>
                 </div>`;
@@ -2997,8 +2441,12 @@
     function selectDeliveryFromSheet(index) {
         const loc = savedDeliveryLocations[index];
         if (!loc) return;
-        currentUserLocation = loc.address;
+        currentUserLocation = loc.name || loc.address;
+        currentUserLat = loc.lat || currentUserLat;
+        currentUserLng = loc.lng || currentUserLng;
         localStorage.setItem('userLocation', currentUserLocation);
+        if (currentUserLat) localStorage.setItem('userLat', currentUserLat);
+        if (currentUserLng) localStorage.setItem('userLng', currentUserLng);
         if (typeof accountLocationInput !== 'undefined' && accountLocationInput)
             accountLocationInput.value = currentUserLocation;
         renderDeliveryBar();
@@ -3018,7 +2466,7 @@
         if (!scrollTicking) {
             requestAnimationFrame(() => {
                 const currentY = window.scrollY;
-                if (currentView !== 'login-view' && currentView !== 'city-selection-view') {
+                if (currentView !== 'login-view') {
                     if (currentY > lastScrollY + 6 && currentY > 50) {
                         smartSearchBar.classList.add('scrolled-down');
                     } else if (currentY < lastScrollY - 4) {
@@ -3032,164 +2480,6 @@
         }
     }, { passive: true });
 
-    function selectCity(city) {
-        selectedCity = city;
-        pendingCity = city;
-        localStorage.setItem('selectedCity', selectedCity);
-        initializeCityRestaurants(city);
-        openCityMap(city);
-    }
-
-    function initializeCityRestaurants(city) {
-        const restaurantsRef = database.ref('restaurants');
-        restaurantsRef.once('value', (snapshot) => {
-            const existingRestaurants = snapshot.val() || {};
-            const cityRestaurants = sampleRestaurants[city] || [];
-            
-            cityRestaurants.forEach(restaurant => {
-                if (!existingRestaurants[restaurant.id]) {
-                    restaurantsRef.child(restaurant.id).set({
-                        ...restaurant,
-                        products: {
-                            sample1: {
-                                name: 'وجبة برجر',
-                                price: 25,
-                                category: 'وجبات رئيسية',
-                                image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg'
-                            },
-                            sample2: {
-                                name: 'بيتزا عائلية',
-                                price: 40,
-                                category: 'بيتزا',
-                                image: 'https://www2.0zz0.com/2025/07/11/14/146112310.jpg'
-                            }
-                        },
-                        categories: [
-                            { name: 'وجبات رئيسية', displayName: 'وجبات رئيسية' },
-                            { name: 'بيتزا', displayName: 'بيتزا' },
-                            { name: 'مشروبات', displayName: 'مشروبات' }
-                        ]
-                    });
-                }
-            });
-        });
-    }
-
-    function renderRestaurantList() {
-        if (!restaurantListContainer) return;
-        restaurantListContainer.innerHTML = '';
-        database.ref('restaurants').orderByChild('city').equalTo(selectedCity).once('value', (snapshot) => {
-            const restaurants = snapshot.val();
-            if (!restaurants) {
-                restaurantListContainer.innerHTML = `<p style="text-align: center; color: #666; padding-top: 20px;">لا توجد مطاعم متوفرة في ${selectedCity} حالياً.</p>`;
-                return;
-            }
-
-            Object.keys(restaurants).forEach(restId => {
-                const restaurant = restaurants[restId];
-                const card = document.createElement('div');
-                card.classList.add('restaurant-card');
-                card.setAttribute('data-name', restaurant.name);
-                card.setAttribute('data-desc', restaurant.description || '');
-                card.onclick = () => showRestaurantMenu(restId, restaurant);
-                card.innerHTML = `
-                    <img src="${restaurant.image}" alt="${restaurant.name}" class="restaurant-image">
-                    <div class="restaurant-info">
-                        <h2>${restaurant.name}</h2>
-                        <p>${restaurant.description}</p>
-                    </div>
-                `;
-                restaurantListContainer.appendChild(card);
-            });
-        });
-    }
-
-    async function showRestaurantMenu(restId, restaurant) {
-        currentRestaurantId = restId;
-        showView('single-restaurant-menu-view');
-
-        restaurantMenuTitle.textContent = restaurant.name;
-        restaurantMenuDescription.textContent = restaurant.description;
-        restaurantMenuCategories.innerHTML = '';
-        restaurantMenuProducts.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;">جاري التحميل...</div>';
-
-        // Fetch fresh data from Firebase to get latest categories & products
-        const snap = await database.ref('restaurants').child(restId).once('value');
-        const freshData = snap.val() || restaurant;
-
-        // ---- Normalise categories ----
-        // Restaurant dashboard saves: ["وجبات رئيسية", "مشروبات"]  (array of strings)
-        // Old seeded data saves:      [{name,displayName}, ...]
-        const rawCats = freshData.categories;
-        let normalCats = [];
-        if (Array.isArray(rawCats) && rawCats.length > 0) {
-            normalCats = rawCats.filter(Boolean).map(c =>
-                typeof c === 'string' ? { name: c, displayName: c } : c
-            );
-        } else if (rawCats && typeof rawCats === 'object') {
-            normalCats = Object.values(rawCats).filter(Boolean).map(c =>
-                typeof c === 'string' ? { name: c, displayName: c } : c
-            );
-        }
-
-        // ---- Render category tabs ----
-        const allCategory = document.createElement('div');
-        allCategory.classList.add('category', 'active');
-        allCategory.setAttribute('data-category', 'all');
-        allCategory.textContent = 'كل الأقسام';
-        restaurantMenuCategories.appendChild(allCategory);
-
-        normalCats.forEach(cat => {
-            const categoryDiv = document.createElement('div');
-            categoryDiv.classList.add('category');
-            categoryDiv.setAttribute('data-category', cat.name);
-            categoryDiv.textContent = cat.displayName;
-            restaurantMenuCategories.appendChild(categoryDiv);
-        });
-
-        // ---- Render products ----
-        restaurantMenuProducts.innerHTML = '';
-        const products = freshData.products || {};
-        const productKeys = Object.keys(products);
-
-        if (productKeys.length === 0) {
-            restaurantMenuProducts.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px;">لا توجد منتجات بعد.</p>';
-        } else {
-            productKeys.forEach(productId => {
-                const product = products[productId];
-                const productCard = document.createElement('div');
-                productCard.classList.add('product-card');
-                productCard.setAttribute('data-category', product.category || '');
-                productCard.setAttribute('data-name', product.name || '');
-                productCard.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}" class="product-image" />
-                    <div class="product-info">
-                        <div class="product-name">${product.name}</div>
-                        <div class="product-price">${product.price} دينار</div>
-                        <button class="add-btn" onclick="addToCart(this, '${(product.name||'').replace(/'/g,"\\'")}', ${product.price}, '${product.image}')">أضف إلى السلة</button>
-                    </div>
-                `;
-                restaurantMenuProducts.appendChild(productCard);
-            });
-        }
-
-        document.getElementById('menu-search').value = '';
-
-        // ---- Category filter click ----
-        document.querySelectorAll('#restaurant-menu-categories .category').forEach(cat => {
-            cat.addEventListener('click', function() {
-                document.querySelectorAll('#restaurant-menu-categories .category').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                const catName = this.dataset.category;
-                document.querySelectorAll('#restaurant-menu-products .product-card').forEach(product => {
-                    product.style.display = (catName === 'all' || product.dataset.category === catName) ? 'flex' : 'none';
-                });
-                document.getElementById('menu-search').value = '';
-                document.getElementById('menu-no-results').style.display = 'none';
-            });
-        });
-    }
-
     async function submitOrder() {
         const cart = getCurrentCart();
         if (cart.length === 0) {
@@ -3197,12 +2487,21 @@
             return;
         }
 
-        const shopType = currentShopType === 'supermarket' ? 'supermarket' : 'restaurant';
+        // Keep the existing order shape while identifying the new section explicitly.
+        const shopType = currentShopType;
         
         let subTotal = 0;
         const items = cart.map(item => {
-            subTotal += item.price;
-            return { name: item.name, price: item.price, imageUrl: item.imageUrl };
+            const quantity = item.quantity || 1;
+            const lineTotal = item.price * quantity;
+            subTotal += lineTotal;
+            return {
+                name: item.name,
+                price: lineTotal,
+                unitPrice: item.price,
+                quantity,
+                imageUrl: item.imageUrl
+            };
         });
 
         const orderData = {
@@ -3227,26 +2526,14 @@
             captainAssigned: null
         };
 
-        if (shopType === 'restaurant' && currentRestaurantId) {
-            const restaurantRef = database.ref('restaurants').child(currentRestaurantId);
-            const snapshot = await restaurantRef.once('value');
-            const restaurant = snapshot.val();
-            if (restaurant) {
-                orderData.restaurantName = restaurant.name;
-                orderData.restaurantLocationLink = restaurant.locationLink || '';
-                orderData.restaurantLat = restaurant.lat || 32.8872;
-                orderData.restaurantLng = restaurant.lng || 20.0668;
-            }
-        }
-
         try {
             const newOrderRef = database.ref('orders').push();
             await newOrderRef.set(orderData);
             
             closeCart();
             showToast('تم استلام طلبك ✓', 'success');
-            if (currentShopType === 'restaurant' && currentRestaurantId) {
-                restaurantCarts[currentRestaurantId] = [];
+            if (currentShopType === 'experimental') {
+                experimentalCart = [];
             } else {
                 supermarketCart = [];
             }
@@ -3337,7 +2624,7 @@
                             <span>▼</span> عرض تفاصيل الأصناف
                         </button>
                         <ul id="${itemsId}" class="order-items-list">
-                            ${order.items.map(item => `<li><span>${item.name}</span> <span>${item.price} د.ل</span></li>`).join('')}
+                            ${order.items.map(item => `<li><span>${item.name}${item.quantity ? ` × ${item.quantity}` : ''}</span> <span>${item.price} د.ل</span></li>`).join('')}
                         </ul>
                     </div>
                     <button class="order-track-btn" onclick="trackOrder('${order.id}')">تتبع الطلب</button>
@@ -3378,7 +2665,14 @@
 
     function addToCart(buttonElement, name, price, imageUrl) {
         const cart = getCurrentCart();
-        cart.push({ name, price, imageUrl });
+        const existingItem = cart.find(item =>
+            item.name === name && item.price === price && item.imageUrl === imageUrl
+        );
+        if (existingItem) {
+            existingItem.quantity = (existingItem.quantity || 1) + 1;
+        } else {
+            cart.push({ name, price, imageUrl, quantity: 1 });
+        }
         updateCartButton();
         showToast(`أُضيف: ${name}`, 'info', 2000);
     }
@@ -3403,29 +2697,45 @@
         cartItemsList.innerHTML = '';
         let subTotal = 0;
         cart.forEach((item, index) => {
-            subTotal += item.price;
+            const quantity = item.quantity || 1;
+            const lineTotal = item.price * quantity;
+            subTotal += lineTotal;
             const li = document.createElement('li');
             li.innerHTML = `
                 <img src="${item.imageUrl}" alt="${item.name}" class="cart-item-image">
                 <div class="cart-item-details">
-                    <span class="cart-item-name">${item.name}</span>
-                    <span class="cart-item-price">${item.price} دينار</span>
+                    <div>
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-unit-price">${item.price} دينار للوحدة</div>
+                    </div>
+                    <div class="cart-item-actions">
+                        <button type="button" class="cart-quantity-btn" onclick="changeCartQuantity(event, ${index}, 1)">+</button>
+                        <span class="cart-quantity">${quantity}</span>
+                        <button type="button" class="cart-quantity-btn" onclick="changeCartQuantity(event, ${index}, -1)">−</button>
+                    </div>
+                    <span class="cart-item-price">${lineTotal.toFixed(2)} دينار</span>
                 </div>
             `;
-            li.onclick = () => {
-                appConfirm('هل تريد حذف هذا المنتج؟', '🗑️').then(confirmed => {
-                    if (confirmed) {
-                        cart.splice(index, 1);
-                        updateCartButton();
-                        renderCart();
-                    }
-                });
-            };
             cartItemsList.appendChild(li);
         });
         cartTotalElement.textContent = `المجموع الفرعي: ${subTotal.toFixed(2)} دينار`;
         deliveryFeeElement.textContent = `سعر التوصيل: ${DELIVERY_FEE.toFixed(2)} دينار`;
         grandTotalElement.textContent = `الإجمالي الكلي: ${(subTotal + DELIVERY_FEE).toFixed(2)} دينار`;
+    }
+
+    function changeCartQuantity(event, index, delta) {
+        event.stopPropagation();
+        const cart = getCurrentCart();
+        const item = cart[index];
+        if (!item) return;
+        item.quantity = (item.quantity || 1) + delta;
+        if (item.quantity <= 0) cart.splice(index, 1);
+        updateCartButton();
+        if (cart.length === 0) {
+            closeCart();
+            return;
+        }
+        renderCart();
     }
 
     function handleLogin() {
@@ -3462,15 +2772,15 @@
     }
 
     function checkLoginStatus() {
-        selectedCity = localStorage.getItem('selectedCity');
+        // City selection was removed from the customer flow. Keep an empty value
+        // so existing database fields remain compatible.
+        selectedCity = localStorage.getItem('selectedCity') || '';
         const savedPhone = localStorage.getItem('userPhone');
         const savedLocation = localStorage.getItem('userLocation');
         const savedLat = localStorage.getItem('userLat');
         const savedLng = localStorage.getItem('userLng');
 
-        if (!selectedCity) {
-            showView('city-selection-view');
-        } else if (savedPhone && savedLocation) {
+        if (savedPhone && savedLocation) {
             currentUserPhone = savedPhone;
             currentUserLocation = savedLocation;
             currentUserLat = savedLat;
@@ -3491,7 +2801,6 @@
         
         accountPhoneInput.value = displayPhone;
         accountLocationInput.value = currentUserLocation;
-        accountCityInput.value = selectedCity;
         accountLatInput.value = currentUserLat || '';
         accountLngInput.value = currentUserLng || '';
         toggleEditAccount(false);
@@ -3503,7 +2812,6 @@
     function toggleEditAccount(isEditing) {
         accountPhoneInput.readOnly = !isEditing;
         accountLocationInput.readOnly = !isEditing;
-        accountCityInput.readOnly = true;
 
         if (isEditing) {
             editAccountBtn.classList.add('hidden');
@@ -3538,17 +2846,16 @@
 
         currentUserPhone = '218' + newPhone;
         currentUserLocation = newLocation;
+        currentUserLat = accountLatInput.value || currentUserLat;
+        currentUserLng = accountLngInput.value || currentUserLng;
         localStorage.setItem('userPhone', currentUserPhone);
         localStorage.setItem('userLocation', currentUserLocation);
+        if (currentUserLat) localStorage.setItem('userLat', currentUserLat);
+        if (currentUserLng) localStorage.setItem('userLng', currentUserLng);
 
         toggleEditAccount(false);
         showToast('تم حفظ التعديلات ✓', 'success');
         accountStatus.classList.add('hidden');
-    }
-
-    function editCityFromAccount() {
-        history.pushState({ viewId: 'account-view' }, '', '#account-view');
-        showView('city-selection-view');
     }
 
     function loadSavedLocations() {
@@ -3567,12 +2874,12 @@
         noSavedLocationsMessage.classList.add('hidden');
 
         savedDeliveryLocations.forEach((loc, index) => {
-            const isSelected = (loc.address === currentUserLocation);
+            const isSelected = (loc.address === currentUserLocation || loc.name === currentUserLocation);
             const locDiv = document.createElement('div');
             locDiv.classList.add('saved-location-item');
             if (isSelected) locDiv.classList.add('selected');
             locDiv.onclick = () => setCurrentDeliveryLocation(index);
-            locDiv.innerHTML = `<span>${loc.name}: ${loc.address}</span>`;
+            locDiv.innerHTML = `<span>${loc.name}</span>`;
             savedLocationsList.appendChild(locDiv);
         });
     }
@@ -3583,7 +2890,8 @@
         newSavedLocationAddressInput.value = '';
         newSavedLocationLatInput.value = '';
         newSavedLocationLngInput.value = '';
-        newSavedLocationStatus.textContent = '📍 اختر موقعك على الخريطة';
+        mapLocationNameInput.value = '';
+        newSavedLocationStatus.textContent = '📍 اختر الموقع من الخريطة ليظهر اسمه';
         newSavedLocationStatus.className = 'location-placeholder';
     }
 
@@ -3600,7 +2908,12 @@
             return;
         }
 
-        savedDeliveryLocations.push({ name, address });
+        savedDeliveryLocations.push({
+            name,
+            address: name,
+            lat: newSavedLocationLatInput.value || null,
+            lng: newSavedLocationLngInput.value || null
+        });
         localStorage.setItem('savedDeliveryLocations', JSON.stringify(savedDeliveryLocations));
         renderSavedLocations();
         renderDeliveryBar();
@@ -3610,8 +2923,12 @@
 
     function setCurrentDeliveryLocation(index) {
         const selectedLoc = savedDeliveryLocations[index];
-        currentUserLocation = selectedLoc.address;
+        currentUserLocation = selectedLoc.name || selectedLoc.address;
+        currentUserLat = selectedLoc.lat || currentUserLat;
+        currentUserLng = selectedLoc.lng || currentUserLng;
         localStorage.setItem('userLocation', currentUserLocation);
+        if (currentUserLat) localStorage.setItem('userLat', currentUserLat);
+        if (currentUserLng) localStorage.setItem('userLng', currentUserLng);
         accountLocationInput.value = currentUserLocation;
         renderSavedLocations();
         renderDeliveryBar();
@@ -3634,10 +2951,9 @@
                 mapInstance = null;
             }
 
-            // الإحداثيات الافتراضية: المدينة المختارة أو بنغازي إن لم تُحدَّد
-            const cityDefault = cityCoords[selectedCity] || cityCoords['بنغازي'];
-            const defaultLat = cityDefault.lat;
-            const defaultLng = cityDefault.lng;
+            // نقطة بداية عامة داخل ليبيا؛ الإحداثيات لا تظهر للمستخدم.
+            const defaultLat = 32.1167;
+            const defaultLng = 20.0667;
 
             let lat, lng;
             if (source === 'login') {
@@ -3663,7 +2979,7 @@
                 const pos = e.target.getLatLng();
                 mapSelectedLat = pos.lat;
                 mapSelectedLng = pos.lng;
-                mapCoordsDisplay.innerHTML = `الإحداثيات: ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+                mapCoordsDisplay.textContent = 'تم تحديد الموقع، اكتب اسماً واضحاً له';
             });
 
             mapInstance.on('click', function(e) {
@@ -3671,10 +2987,18 @@
                 mapMarker.setLatLng(pos);
                 mapSelectedLat = pos.lat;
                 mapSelectedLng = pos.lng;
-                mapCoordsDisplay.innerHTML = `الإحداثيات: ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+                mapCoordsDisplay.textContent = 'تم تحديد الموقع، اكتب اسماً واضحاً له';
             });
 
-            mapCoordsDisplay.innerHTML = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            mapCoordsDisplay.textContent = 'تم تحديد الموقع، اكتب اسماً واضحاً له';
+            const existingName = source === 'login'
+                ? userLocationInput.value
+                : source === 'account'
+                    ? accountLocationInput.value
+                    : locationNameInput.value;
+            mapLocationNameInput.value = existingName && !existingName.startsWith('موقع مختار:')
+                ? existingName
+                : '';
             mapSelectedLat = lat;
             mapSelectedLng = lng;
         }, 100);
@@ -3694,26 +3018,32 @@
             showToast('الرجاء اختيار موقع على الخريطة', 'error');
             return;
         }
+        const locationName = mapLocationNameInput.value.trim();
+        if (!locationName) {
+            showToast('اسم الموقع مطلوب قبل تأكيده', 'error');
+            mapLocationNameInput.focus();
+            return;
+        }
 
         if (currentMapSource === 'login') {
             userLatInput.value = mapSelectedLat.toFixed(6);
             userLngInput.value = mapSelectedLng.toFixed(6);
-            userLocationInput.value = `موقع مختار: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
-            document.getElementById('login-coords-hint').textContent = `الإحداثيات: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
+            userLocationInput.value = locationName;
+            document.getElementById('login-coords-hint').textContent = '';
             locationStatusElement.textContent = '✅ تم تحديد الموقع عبر الخريطة';
             locationStatusElement.className = 'location-placeholder success';
         } else if (currentMapSource === 'account') {
             accountLatInput.value = mapSelectedLat.toFixed(6);
             accountLngInput.value = mapSelectedLng.toFixed(6);
-            accountLocationInput.value = `موقع مختار: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
-            document.getElementById('account-coords-hint').textContent = `الإحداثيات: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
+            accountLocationInput.value = locationName;
+            document.getElementById('account-coords-hint').textContent = '';
             accountLocationStatusElement.textContent = '✅ تم تحديث الموقع عبر الخريطة';
             accountLocationStatusElement.className = 'location-placeholder success';
         } else if (currentMapSource === 'new-location') {
             newSavedLocationLatInput.value = mapSelectedLat.toFixed(6);
             newSavedLocationLngInput.value = mapSelectedLng.toFixed(6);
-            newSavedLocationAddressInput.value = `موقع مختار: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
-            document.getElementById('new-location-coords-hint').textContent = `الإحداثيات: ${mapSelectedLat.toFixed(5)}, ${mapSelectedLng.toFixed(5)}`;
+            newSavedLocationAddressInput.value = locationName;
+            document.getElementById('new-location-coords-hint').textContent = '';
             newSavedLocationStatus.textContent = '✅ تم تحديد الموقع عبر الخريطة';
             newSavedLocationStatus.className = 'location-placeholder success';
         }
